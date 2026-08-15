@@ -9,7 +9,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int selectedIndex=0;
+  int selectedIndex = 0;
   List pages = [
     Explore(),
     Center(child: Text('Notificações', style: TextStyle(fontSize: 32))),
@@ -19,21 +19,12 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.menu),
-        title: TextField(
-          decoration: InputDecoration(
-            hintText: 'Pesquisar',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-          ),
-        ),
-      ),
       body: pages[selectedIndex],
       bottomNavigationBar: buildBottomNavBar(),
     );
   }
 
-  buildBottomNavBar(){
+  buildBottomNavBar() {
     return BottomNavigationBar(
       currentIndex: selectedIndex,
       selectedItemColor: Colors.green,
@@ -41,12 +32,15 @@ class _HomeState extends State<Home> {
       type: BottomNavigationBarType.fixed,
       onTap: (index) {
         setState(() {
-          selectedIndex=index;
+          selectedIndex = index;
         });
       },
       items: [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Início"),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notificações"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: 'Notificações',
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Você"),
       ],
     );
