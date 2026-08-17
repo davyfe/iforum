@@ -34,4 +34,15 @@ class PostDao {
     Database db = await DbHelper().initDB();
     return db.delete('POST', where: 'id=?', whereArgs: [id]);
   }
+
+  // usado no posts tab na tela perfil
+  Future<List<Post>> listarPorAutor(String autor) async {
+    Database db = await DbHelper().initDB();
+    final result = await db.query(
+      'POST',
+      where: 'autor = ?',
+      whereArgs: [autor],
+    );
+    return result.map((json) => Post.fromJson(json)).toList();
+  }
 }

@@ -43,5 +43,16 @@ class DbHelper {
     sql =
         "INSERT INTO PROPRIEDADE_POST (titulo, autor, tempo) VALUES ('Meu computador não está funcionando... Alguém sabe o que pode ser?', 'duarte.geh', '2 segundos');";
     await db.execute(sql);
+
+    sql = '''CREATE TABLE USER ( 
+      username TEXT PRIMARY KEY,
+      password TEXT
+    ); ''';
+
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO USER (username, password) VALUES ('pdrolopes', '123456');";
+    await db.execute(sql);
   }
 }

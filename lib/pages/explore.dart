@@ -12,7 +12,7 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<Post> listaPosts = [];
+  late Future<List<Post>> listaPosts;
 
   @override
   void initState() {
@@ -21,14 +21,14 @@ class _ExploreState extends State<Explore> {
   }
 
   loadData() async {
-    listaPosts = await PostDao().listarPosts();
+    listaPosts = PostDao().listarPosts();
     await Future.delayed(Duration(seconds: 3));
     setState(() {});
   }
 
   void recarregar() {
     setState(() async {
-      listaPosts = await PostDao().listarPosts();
+      listaPosts = PostDao().listarPosts();
     });
   }
 
@@ -40,10 +40,58 @@ class _ExploreState extends State<Explore> {
         title: _buildTitle(),
         actions: [_buildAction()],
       ),
-      body: ListView.builder(
-        itemCount: listaPosts.length,
-        itemBuilder: (context, i) {
-          return BuildPost(post: listaPosts[i]);
+      body: FutureBuilder<List<Post>>(
+        future: listaPosts,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.grey, size: 48),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Erro ao carregar posts',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  Text(
+                    snapshot.error.toString(),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
+          }
+          final posts = snapshot.data ?? [];
+          if (posts.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.article_outlined,
+                    color: Colors.grey,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Nenhum post ainda.',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: posts.length,
+            itemBuilder: (context, i) => BuildPost(post: posts[i]),
+          );
         },
       ),
     );
