@@ -34,6 +34,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
       body: ListView(
         children: [
           _buildHeader(username: usuario),
+          _buildTab(),
           _buildPostsTab(autor: usuario),
         ],
       ),
@@ -68,34 +69,34 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
               BuildText('10', size: 15, bold: true, color: Colors.white),
               const SizedBox(width: 5),
               BuildText('seguindo', size: 15, color: Colors.white),
-              const SizedBox(height: 10),
+            ],
+          ),
+          const SizedBox(height: 10),
+          BuildText(
+            '\'Não esquecer que por enquanto é tempo de morangos. Sim.\' - Clarice Lispector, A Hora da Estrela.',
+            size: 15,
+            color: Colors.white,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              const Icon(Icons.school, size: 18, color: Colors.white),
+              const SizedBox(width: 5),
               BuildText(
-                '\'Não esquecer que por enquanto é tempo de morangos. Sim.\' - Clarice Lispector, A Hora da Estrela.',
+                'Técnico em Informática',
                 size: 15,
                 color: Colors.white,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  const Icon(Icons.school, size: 18, color: Colors.white),
-                  const SizedBox(width: 5),
-                  BuildText(
-                    'Técnico em Informática',
-                    size: 15,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 15),
-                  const Icon(
-                    Icons.location_city,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 5),
-                  BuildText('Campus Arapiraca', size: 15, color: Colors.white),
-                ],
+              const SizedBox(width: 15),
+              const Icon(
+                Icons.location_city,
+                color: Colors.white,
+                size: 18,
               ),
+              const SizedBox(width: 5),
+              BuildText('Campus Arapiraca', size: 15, color: Colors.white),
             ],
           ),
         ],

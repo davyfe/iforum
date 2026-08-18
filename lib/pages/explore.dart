@@ -3,6 +3,7 @@ import 'package:iforum/widget/buildText.dart';
 import '/db/postDao.dart';
 import '/domain/post.dart';
 import '/widget/buildPost.dart';
+import '/cores.dart';
 import 'criarPost.dart';
 
 class Explore extends StatefulWidget {
@@ -40,6 +41,8 @@ class _ExploreState extends State<Explore> {
         leading: _buildLeading(),
         title: _buildTitle(),
         actions: [_buildAction()],
+        backgroundColor: Cores.verde,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder(
         future: futureListaPosts,

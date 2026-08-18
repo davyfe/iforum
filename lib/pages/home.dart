@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/pages/perfil.dart';
 import 'explore.dart';
 
 class Home extends StatefulWidget {
@@ -13,7 +14,7 @@ class _HomeState extends State<Home> {
   List pages = [
     Explore(),
     Center(child: Text('Notificações', style: TextStyle(fontSize: 32))),
-    Center(child: Text('Perfil', style: TextStyle(fontSize: 32))),
+    Perfil(),
   ];
 
   @override

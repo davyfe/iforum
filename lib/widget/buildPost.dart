@@ -93,7 +93,7 @@ class _BuildPostState extends State<BuildPost> {
   Widget _buildAnexo(String nome, String tamanho) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      width: 145,
+      width: 150,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.black54, width: 0.3),
