@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/widget/buildText.dart';
 import '/db/postDao.dart';
 import '/domain/post.dart';
 import '/widget/buildPost.dart';
@@ -12,23 +13,23 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  late Future<List<Post>> listaPosts;
+  late Future<List<Post>> futureListaPosts;
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    futureListaPosts = PostDao().listarPosts();
   }
 
-  loadData() async {
-    listaPosts = PostDao().listarPosts();
-    await Future.delayed(Duration(seconds: 3));
-    setState(() {});
-  }
+  // loadData() async {
+  //   listaPosts = PostDao().listarPosts();
+  //   await Future.delayed(Duration(seconds: 3));
+  //   setState(() {});
+  // }
 
   void recarregar() {
     setState(() async {
-      listaPosts = PostDao().listarPosts();
+      futureListaPosts = PostDao().listarPosts();
     });
   }
 
@@ -40,11 +41,12 @@ class _ExploreState extends State<Explore> {
         title: _buildTitle(),
         actions: [_buildAction()],
       ),
-      body: FutureBuilder<List<Post>>(
-        future: listaPosts,
+      body: FutureBuilder(
+        future: futureListaPosts,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if(snapshot.hasData){
+            List<Post> listaPosts = snapshot.requireData;
+            return buildListView(listaPosts);
           }
           if (snapshot.hasError) {
             return Center(
@@ -53,47 +55,23 @@ class _ExploreState extends State<Explore> {
                 children: [
                   const Icon(Icons.error_outline, color: Colors.grey, size: 48),
                   const SizedBox(height: 8),
-                  Text(
-                    'Erro ao carregar posts',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Text(
-                    snapshot.error.toString(),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
+                  BuildText('Erro ao carregar posts', color: Colors.red),
+                  BuildText(snapshot.error.toString(), color: Colors.red),
                 ],
               ),
             );
           }
-          final posts = snapshot.data ?? [];
-          if (posts.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.article_outlined,
-                    color: Colors.grey,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Nenhum post ainda.',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            );
-          }
-          return ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: posts.length,
-            itemBuilder: (context, i) => BuildPost(post: posts[i]),
-          );
+          return const Center(child: CircularProgressIndicator());
         },
       ),
+    );
+  }
+
+  ListView buildListView(listaPosts){
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: listaPosts.length,
+      itemBuilder: (context, i) => BuildPost(post: listaPosts[i]),
     );
   }
 
