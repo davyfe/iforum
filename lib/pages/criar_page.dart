@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '/widget/buildText.dart';
+import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/post.dart';
-import '/db/postDao.dart';
+import '/db/post_dao.dart';
 
 class CriarPost extends StatefulWidget {
   const CriarPost({super.key});
@@ -87,7 +87,6 @@ class _CriarPostState extends State<CriarPost> {
                   ),
                 ),
         ],
-        backgroundColor: Cores.fundo,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

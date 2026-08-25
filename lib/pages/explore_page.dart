@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:iforum/widget/buildText.dart';
-import '/db/postDao.dart';
+import 'package:iforum/widget/build_text.dart';
+import '/db/post_dao.dart';
 import '/domain/post.dart';
-import '/widget/buildPost.dart';
+import '/widget/build_post.dart';
 import '/cores.dart';
-import 'criarPost.dart';
+import 'criar_page.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -21,12 +21,6 @@ class _ExploreState extends State<Explore> {
     super.initState();
     futureListaPosts = PostDao().listarPosts();
   }
-
-  // loadData() async {
-  //   listaPosts = PostDao().listarPosts();
-  //   await Future.delayed(Duration(seconds: 3));
-  //   setState(() {});
-  // }
 
   void recarregar() {
     setState(() async {
@@ -47,7 +41,7 @@ class _ExploreState extends State<Explore> {
       body: FutureBuilder(
         future: futureListaPosts,
         builder: (context, snapshot) {
-          if(snapshot.hasData){
+          if (snapshot.hasData) {
             List<Post> listaPosts = snapshot.requireData;
             return buildListView(listaPosts);
           }
@@ -70,7 +64,7 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-  ListView buildListView(listaPosts){
+  ListView buildListView(listaPosts) {
     return ListView.builder(
       padding: EdgeInsets.zero,
       itemCount: listaPosts.length,

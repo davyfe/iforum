@@ -25,7 +25,6 @@ class DbHelper {
       anexo INTEGER DEFAULT 0,
       urlImagem TEXT
     ); ''';
-
     await db.execute(sql);
 
     sql =
@@ -48,11 +47,40 @@ class DbHelper {
       username TEXT PRIMARY KEY,
       password TEXT
     ); ''';
-
     await db.execute(sql);
 
     sql =
         "INSERT INTO USER (username, password) VALUES ('pdrolopes', '123456');";
+    await db.execute(sql);
+
+    sql = '''CREATE TABLE NOTICIA (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      titulo TEXT NOT NULL,
+      texto TEXT NOT NULL,
+      autor TEXT NOT NULL,
+      data TEXT NOT NULL,
+      urlImagem TEXT
+    ); ''';
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Professor inova com novo método apresentado em sala.', 'O uso de ferramentas digitais e estratégias organizadas permite uma análise mais precisa dos hábitos de consumo, possibilitando identificar padrões, desperdícios e oportunidades de melhoria.', 'Alaryce Jaylle', '18/05/2026', 'https://img.freepik.com/fotos-gratis/professor-de-homem-usando-oculos-verificando-o-registro-de-classe-olhando-para-a-camera-intrigado-com-a-expressao-pensativa-pensando-sentado-na-mesa-da-escola-na-frente-do-quadro-negro-na-sala-aula_141793-131719.jpg')";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Ordem e Disciplina: Dolores Umbridge é nomeada a primeira Alta Inquisidora de Hogwarts.', 'O Ministério da Magia tomou uma medida sem precedentes nesta manhã para garantir o rigor e o padrão de excellence na Escola de Magia e Bruxaria de Hogwarts.', 'Rita Skeeter', '08/09/1995', 'https://observatoriodocinema.com.br/wp-content/uploads/2023/12/dolores-umbridge-harry-potter-scaled.jpg')";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Grêmio Estudantil divulga ação sobre a importância da participação ativa.', 'A ação promovida pelo Grêmio Estudantil teve como principal objetivo incentivar os alunos a participarem mais ativamente das decisões da escola.', 'José Paulo', '15/05/2026', 'https://observatorio.movimentopelabase.org.br/wp-content/uploads/2022/07/shutterstock-1937721487-970x570.jpg')";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('A percepção das dificuldades promove uma abordagem mais crítica e inclusiva na realidade educacional.', 'Os estudos mais recentes relacionados ao ambiente escolar demonstram que compreender as dificuldades enfrentadas pelos estudantes é fundamental para criar um ambiente mais inclusivo.', 'Adriana Santana', '16/05/2026', 'https://www.agricultura.sc.gov.br/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-04-at-16.51.49.jpeg')";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Panorama sobre o universo dos jogos destaca seu papel no aprendizado.', 'Pesquisadores e educadores vêm discutindo cada vez mais a presença dos jogos digitais como ferramenta pedagógica nas escolas.', 'Karinne Coelho', '15/05/2026', 'https://cdn.focoradical.com.br/newfoco/banners/20251217173547IMG9373.jpg')";
     await db.execute(sql);
   }
 }

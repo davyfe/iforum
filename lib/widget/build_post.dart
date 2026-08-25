@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '/domain/post.dart';
 import '/cores.dart';
-import 'buildInteractionBar.dart';
-import 'buildText.dart';
+import 'build_interaction.dart';
+import 'build_text.dart';
 
 class BuildPost extends StatefulWidget {
   Post post;

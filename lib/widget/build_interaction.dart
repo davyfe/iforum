@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iforum/widget/buildText.dart';
+import 'package:iforum/widget/build_text.dart';
 
 class BuildInteractionBar extends StatefulWidget {
   final int likes;

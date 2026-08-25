@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '/pages/perfil.dart';
-import 'explore.dart';
+import '/pages/perfil_page.dart';
+import 'explore_page.dart';
+import 'noticias_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,7 +14,8 @@ class _HomeState extends State<Home> {
   int selectedIndex = 0;
   List pages = [
     Explore(),
-    Center(child: Text('Notificações', style: TextStyle(fontSize: 32))),
+    //Center(child: Text('Notificações', style: TextStyle(fontSize: 32))),
+    Noticias(),
     Perfil(),
   ];
 

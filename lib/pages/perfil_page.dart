@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '/widget/buildText.dart';
+import '/widget/build_text.dart';
 import '/cores.dart';
 
-import '/db/postDao.dart';
+import '/db/post_dao.dart';
 import '/domain/post.dart';
-import '/widget/buildPost.dart';
+import '/widget/build_post.dart';
 
 // nota: atualmente, no banco de dados de usuário
 // só tem username e senha, o resto coloco manualmente.
@@ -90,11 +90,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
                 color: Colors.white,
               ),
               const SizedBox(width: 15),
-              const Icon(
-                Icons.location_city,
-                color: Colors.white,
-                size: 18,
-              ),
+              const Icon(Icons.location_city, color: Colors.white, size: 18),
               const SizedBox(width: 5),
               BuildText('Campus Arapiraca', size: 15, color: Colors.white),
             ],
@@ -110,7 +106,6 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
       child: Column(
         children: [
           Container(
-            color: Cores.fundo,
             child: TabBar(
               unselectedLabelColor: Colors.grey,
               labelColor: Colors.black,
