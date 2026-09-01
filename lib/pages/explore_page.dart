@@ -23,7 +23,7 @@ class _ExploreState extends State<Explore> {
   }
 
   void recarregar() {
-    setState(() async {
+    setState(() {
       futureListaPosts = PostDao().listarPosts();
     });
   }

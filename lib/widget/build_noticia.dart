@@ -47,7 +47,7 @@ class BuildNoticia extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: BuildText(noticia.titulo, bold: true, size: 19),
+                      child: BuildText(noticia.titulo, bold: true, size: 17),
                     ),
                     const SizedBox(width: 12),
                     ClipRRect(

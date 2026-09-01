@@ -19,23 +19,36 @@ class Perfil extends StatefulWidget {
 
 class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   final usuario = 'pdrolopes';
+  late final Future<List<Post>> _postsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _postsFuture = PostDao().listarPorAutor(usuario);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Cores.verde,
-        iconTheme: IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.settings_outlined)),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
-      body: ListView(
+      body: Stack(
         children: [
-          _buildHeader(username: usuario),
-          _buildTab(),
-          _buildPostsTab(autor: usuario),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(username: usuario),
+                _buildTabBar(),
+                _buildPosts(),
+              ],
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 10,
+            child: IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
@@ -44,7 +57,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   Widget _buildHeader({required String username}) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: 25, right: 25, bottom: 20, top: 20),
+      padding: EdgeInsets.only(left: 25, right: 25, bottom: 20, top: 70),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
@@ -82,17 +95,13 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           const SizedBox(height: 15),
           Row(
             children: [
-              const Icon(Icons.school, size: 18, color: Colors.white),
+              const Icon(Icons.school, size: 15, color: Colors.white),
               const SizedBox(width: 5),
-              BuildText(
-                'Técnico em Informática',
-                size: 15,
-                color: Colors.white,
-              ),
+              BuildText('Técnico em Informática', color: Colors.white),
               const SizedBox(width: 15),
-              const Icon(Icons.location_city, color: Colors.white, size: 18),
+              const Icon(Icons.location_city, color: Colors.white, size: 15),
               const SizedBox(width: 5),
-              BuildText('Campus Arapiraca', size: 15, color: Colors.white),
+              BuildText('Campus Arapiraca', color: Colors.white),
             ],
           ),
         ],
@@ -100,32 +109,25 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildTab() {
+  Widget _buildTabBar() {
     return DefaultTabController(
       length: 1,
-      child: Column(
-        children: [
-          Container(
-            child: TabBar(
-              unselectedLabelColor: Colors.grey,
-              labelColor: Colors.black,
-              indicatorColor: Cores.verde,
-              indicatorWeight: 3.0,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold),
-              tabs: [Tab(text: "Posts")],
-            ),
-          ),
-          Expanded(
-            child: TabBarView(children: [_buildPostsTab(autor: usuario)]),
-          ),
-        ],
+      child: Container(
+        child: TabBar(
+          unselectedLabelColor: Colors.grey,
+          labelColor: Colors.black,
+          indicatorColor: Cores.verde,
+          indicatorWeight: 3.0,
+          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+          tabs: [Tab(text: "Posts")],
+        ),
       ),
     );
   }
 
-  Widget _buildPostsTab({required String autor}) {
+  Widget _buildPosts() {
     return FutureBuilder<List<Post>>(
-      future: PostDao().listarPorAutor(autor),
+      future: _postsFuture,
       builder: (context, snapshot) {
         // verifica possiveis acontecimentos durante o carregamento dos posts
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -168,8 +170,11 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
         }
 
         return ListView.builder(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.only(bottom: 20),
           itemCount: posts.length,
+          shrinkWrap: true,
+          // para ocupar apenas o espaço do conteúdo
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, i) => BuildPost(post: posts[i]),
         );
       },
