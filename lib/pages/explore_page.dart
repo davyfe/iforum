@@ -74,10 +74,8 @@ class _ExploreState extends State<Explore> {
 
   Widget _buildLeading() {
     return Builder(
-      builder: (BuildContext context) => IconButton(
-        onPressed: () => Scaffold.of(context).openDrawer(),
-        icon: const Icon(Icons.menu),
-      ),
+      builder: (BuildContext context) =>
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
     );
   }
 

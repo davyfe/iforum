@@ -12,12 +12,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  List pages = [
-    Explore(),
-    //Center(child: Text('Notificações', style: TextStyle(fontSize: 32))),
-    Noticias(),
-    Perfil(),
-  ];
+  List pages = [Explore(), Noticias(), Perfil()];
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +35,7 @@ class _HomeState extends State<Home> {
       },
       items: [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Início"),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          label: 'Notificações',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Notícias'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Você"),
       ],
     );
