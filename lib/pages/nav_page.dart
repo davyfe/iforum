@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/widget/build_comentario.dart';
 import '../widget/build_text.dart';
 import '/domain/noticia.dart';
 import '/cores.dart';
@@ -31,7 +32,7 @@ class _NavPageState extends State<NavPage> {
                     widget.noticia.urlImagem,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox.shrink(),
+                    const SizedBox.shrink(),
                   ),
                   const DecoratedBox(
                     decoration: BoxDecoration(
@@ -139,7 +140,7 @@ class _NavPageState extends State<NavPage> {
                   ),
                   const SizedBox(height: 30),
                   Text("Comentários (5)"),
-                  _buildComentarios(),
+                  _buildSessaoComentarios(),
                 ],
               ),
             ),
@@ -150,35 +151,18 @@ class _NavPageState extends State<NavPage> {
   }
 
   // COLOCAR WIDGET DEPOIS
-  Widget _buildComentarios() {
+  Widget _buildSessaoComentarios() {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 10),
-          Row(
-            children: [
-              CircleAvatar(radius: 12, backgroundColor: Cores.avatar),
-              SizedBox(width: 8),
-              Text(
-                "camila_rosa",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text("15m"),
-              Spacer(),
-              Icon(Icons.more_horiz),
-            ],
-          ),
-          SizedBox(height: 5),
-          Text(
-            "Os comentários são todos iguais!! Estamos em uma matrix??!!",
-            style: TextStyle(fontSize: 15),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 8),
-          buildInteracao(16, 2, "😱"),
+          BuildComentario(
+              texto: 'Os comentários são todos iguais!! Estamos em uma matrix??!!',
+              autor: 'camilaas',
+              tempo: '2 minutos',
+              likes: 12,
+              reacao: "😱"),
           SizedBox(height: 10),
           const Divider(color: Colors.black54, thickness: 0.2, height: 1),
           SizedBox(height: 10),

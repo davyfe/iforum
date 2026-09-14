@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:iforum/widget/build_text.dart';
+import '/widget/build_text.dart';
+import '/widget/build_post.dart';
+import 'pesquisar_page.dart';
 import '/db/post_dao.dart';
 import '/domain/post.dart';
-import '/widget/build_post.dart';
-import '/cores.dart';
 import 'criar_page.dart';
-import 'pesquisar_page.dart';
+import '/cores.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -93,17 +93,26 @@ class _ExploreState extends State<Explore> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: Theme.of(context).colorScheme.onPrimary,
+            color: Theme
+                .of(context)
+                .colorScheme
+                .onPrimary,
             width: 1.0,
           ),
         ),
         child: Row(
           children: [
-            Icon(Icons.search, color: Theme.of(context).colorScheme.onPrimary),
+            Icon(Icons.search, color: Theme
+                .of(context)
+                .colorScheme
+                .onPrimary),
             const SizedBox(width: 8),
             BuildText(
               'Pesquisar',
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: Theme
+                  .of(context)
+                  .colorScheme
+                  .onPrimary,
               size: 16,
             ),
           ],
@@ -118,11 +127,11 @@ class _ExploreState extends State<Explore> {
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-              MaterialPageRoute(
-                builder: (context) => const CriarPost(),
-                fullscreenDialog: true,
-              ),
-            );
+          MaterialPageRoute(
+            builder: (context) => const CriarPost(),
+            fullscreenDialog: true,
+          ),
+        );
         if (criou == true) {
           recarregar();
         }

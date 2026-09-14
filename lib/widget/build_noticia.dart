@@ -64,15 +64,7 @@ class BuildNoticia extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                BuildInteractionBar(
-                  likes: 30,
-                  comentarios: 10,
-                  trailing: const Icon(
-                    Icons.share_outlined,
-                    size: 20,
-                    color: Colors.black54,
-                  ),
-                ),
+                BuildInteractionBar(likes: 30, comentarios: 10),
               ],
             ),
           ),

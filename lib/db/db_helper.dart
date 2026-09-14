@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
   Future<Database> initDB() async {
     String path = await getDatabasesPath();
-    String dbName = 'iforum.gb';
+    String dbName = 'iforum.db';
 
     String dbPath = join(path, dbName);
 
@@ -81,6 +82,35 @@ class DbHelper {
 
     sql =
         "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Panorama sobre o universo dos jogos destaca seu papel no aprendizado.', 'Pesquisadores e educadores vêm discutindo cada vez mais a presença dos jogos digitais como ferramenta pedagógica nas escolas.', 'Karinne Coelho', '15/05/2026', 'https://cdn.focoradical.com.br/newfoco/banners/20251217173547IMG9373.jpg')";
+    await db.execute(sql);
+
+    sql = '''CREATE TABLE EVENTO (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      titulo TEXT NOT NULL,
+      data TEXT NOT NULL,
+      horario TEXT NOT NULL,
+      local TEXT NOT NULL,
+      autor TEXT NOT NULL,
+      iconCodePoint INTEGER NOT NULL,
+      iconFontFamily TEXT,
+      cor INTEGER NOT NULL
+    ); ''';
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03/2026', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', ${Icons.event.codePoint}, '${Icons.event.fontFamily}', ${Colors.lightBlueAccent.toARGB32()})";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06/2026', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', ${Icons.eco.codePoint}, '${Icons.eco.fontFamily}', ${Colors.lightGreen.toARGB32()})";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('Abril Índigena', '16/04/2026', '9:30', 'Ifal Campus Arapiraca', 'Sante', ${Icons.event.codePoint}, '${Icons.event.fontFamily}', ${Colors.redAccent.toARGB32()})";
+    await db.execute(sql);
+
+    sql =
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('V Festival de Arte', '04/12/2024', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', ${Icons.palette.codePoint}, '${Icons.event.fontFamily}', ${Colors.yellow.toARGB32()})";
     await db.execute(sql);
   }
 }

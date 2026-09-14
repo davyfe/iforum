@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/pages/perfil_page.dart';
 import 'explore_page.dart';
 import 'noticias_page.dart';
+import 'eventos_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -12,7 +13,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  List pages = [Explore(), Noticias(), Perfil()];
+  List pages = [Explore(), Eventos(), Noticias(), Perfil()];
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +35,10 @@ class _HomeState extends State<Home> {
         });
       },
       items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Início"),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+        BottomNavigationBarItem(icon: Icon(Icons.event_note), label: 'Eventos'),
         BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Notícias'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Você"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Você'),
       ],
     );
   }

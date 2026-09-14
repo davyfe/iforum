@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-
 import '/domain/post.dart';
 import '/cores.dart';
 import 'build_interaction.dart';
 import 'build_text.dart';
 
 class BuildPost extends StatefulWidget {
-  Post post;
+  final Post post;
 
-  BuildPost({super.key, required this.post});
+  const BuildPost({super.key, required this.post});
 
   @override
   State<BuildPost> createState() => _BuildPostState();
@@ -74,11 +73,6 @@ class _BuildPostState extends State<BuildPost> {
                 BuildInteractionBar(
                   likes: widget.post.likes,
                   comentarios: widget.post.comentarios,
-                  trailing: const Icon(
-                    Icons.share_outlined,
-                    size: 20,
-                    color: Colors.black54,
-                  ),
                 ),
               ],
             ),
