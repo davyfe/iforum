@@ -15,13 +15,22 @@ class Eventos extends StatefulWidget {
 
 class _EventosState extends State<Eventos> {
   late Future<List<Evento>> futureListEventos;
-  String filtroAtual =
-      'todos'; // 'todos', 'inscritos', 'naoInscritos' ou 'favoritos'
+  final _pesquisaController = TextEditingController();
+
+  String aba = 'programacao';
+  String termoPesquisa = '';
+  bool filtrarFavoritos = false;
 
   @override
   void initState() {
     super.initState();
     futureListEventos = _carregarEventos();
+  }
+
+  @override
+  void dispose() {
+    _pesquisaController.dispose();
+    super.dispose();
   }
 
   Future<List<Evento>> _carregarEventos() async {
@@ -42,17 +51,59 @@ class _EventosState extends State<Eventos> {
     });
   }
 
-  List<Evento> _aplicarFiltro(List<Evento> eventos) {
-    switch (filtroAtual) {
-      case 'inscritos':
-        return eventos.where((e) => e.inscrito).toList();
-      case 'naoInscritos':
-        return eventos.where((e) => !e.inscrito).toList();
-      case 'favoritos':
-        return eventos.where((e) => e.favorito).toList();
-      default:
-        return eventos;
+  List<Evento> _aplicarFiltros(List<Evento> eventos) {
+    var lista = eventos
+        .where((e) => aba == 'agenda' ? e.inscrito : !e.inscrito)
+        .toList();
+
+    if (termoPesquisa.isNotEmpty) {
+      lista = lista
+          .where(
+            (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
+          )
+          .toList();
     }
+
+    if (filtrarFavoritos) {
+      lista = lista.where((e) => e.favorito).toList();
+    }
+
+    return lista;
+  }
+
+  void _abrirFiltro() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: BuildText('Filtrar eventos', bold: true, size: 18),
+            content: CheckboxListTile(
+              value: filtrarFavoritos,
+              onChanged: (valor) {
+                setStateDialog(() => filtrarFavoritos = valor ?? false);
+              },
+              title: BuildText('Somente favoritos'),
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: Cores.verde,
+              contentPadding: EdgeInsets.zero,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  setState(() {});
+                  Navigator.of(context).pop();
+                },
+                child: BuildText('Aplicar', color: Cores.verde, bold: true),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -73,13 +124,14 @@ class _EventosState extends State<Eventos> {
       ),
       body: Column(
         children: [
-          _buildFiltros(),
+          _buildAbas(),
+          _buildBarraPesquisa(),
           Expanded(
             child: FutureBuilder(
               future: futureListEventos,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  final lista = _aplicarFiltro(snapshot.requireData);
+                  final lista = _aplicarFiltros(snapshot.requireData);
                   if (lista.isEmpty) {
                     return Center(
                       child: BuildText(
@@ -119,34 +171,74 @@ class _EventosState extends State<Eventos> {
     );
   }
 
-  Widget _buildFiltros() {
-    final filtros = {
-      'todos': 'Todos',
-      'inscritos': 'Inscritos',
-      'naoInscritos': 'Não inscritos',
-      'favoritos': 'Favoritos',
-    };
+  Widget _buildAbas() {
+    final abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
 
-    return SizedBox(
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: filtros.entries.map((entry) {
-          final selecionado = filtroAtual == entry.key;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(entry.value),
-              selected: selecionado,
-              selectedColor: Cores.verde,
-              labelStyle: TextStyle(
-                color: selecionado ? Colors.white : Colors.black87,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        children: abas.entries.map((entry) {
+          final selecionado = aba == entry.key;
+          return Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () => setState(() => aba = entry.key),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selecionado ? Cores.verde : Colors.transparent,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Center(
+                  child: BuildText(
+                    entry.value,
+                    bold: true,
+                    color: selecionado ? Colors.white : Cores.textoTerciario,
+                  ),
+                ),
               ),
-              onSelected: (_) => setState(() => filtroAtual = entry.key),
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBarraPesquisa() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: _abrirFiltro,
+            icon: Icon(
+              Icons.filter_list,
+              color: filtrarFavoritos ? Cores.verde : Cores.textoTerciario,
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _pesquisaController,
+              onChanged: (valor) => setState(() => termoPesquisa = valor),
+              decoration: InputDecoration(
+                hintText: 'Pesquisar eventos...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -14,7 +14,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  List pages = [Explore(), Eventos(), Noticias(), Biblioteca(), Perfil()];
+  List pages = [Explore(), Eventos(), Biblioteca(), Noticias(), Perfil()];
 
   @override
   Widget build(BuildContext context) {
