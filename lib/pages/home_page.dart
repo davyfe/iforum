@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '/pages/perfil_page.dart';
+import 'perfil_page.dart';
 import 'explore_page.dart';
 import 'noticias_page.dart';
 import 'eventos_page.dart';
+import 'biblioteca_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,13 +14,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  List pages = [
-    Explore(),
-    Eventos(),
-    Noticias(),
-    Center(child: Text('Biblioteca', style: TextStyle(fontSize: 32))),
-    Perfil(),
-  ];
+  List pages = [Explore(), Eventos(), Noticias(), Biblioteca(), Perfil()];
 
   @override
   Widget build(BuildContext context) {

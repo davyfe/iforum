@@ -5,13 +5,11 @@ import 'db_helper.dart';
 class EventoDao {
   Future<List<Evento>> listarEventos() async {
     Database db = await DbHelper().initDB();
-
     var result = await db.rawQuery('SELECT * FROM EVENTO');
 
     List<Evento> lista = [];
     for (var json in result) {
-      Evento evento = Evento.fromJson(json);
-      lista.add(evento);
+      lista.add(Evento.fromJson(json));
     }
     return lista;
   }
@@ -24,9 +22,29 @@ class EventoDao {
       'horario': evento.horario,
       'local': evento.local,
       'autor': evento.autor,
-      'iconCodePoint': evento.icone.codePoint,
-      'iconFontFamily': evento.icone.fontFamily,
       'cor': evento.cor.toARGB32(),
+      'inscrito': evento.inscrito ? 1 : 0,
+      'favorito': evento.favorito ? 1 : 0,
     });
+  }
+
+  Future<int> atualizarInscricao(int id, bool inscrito) async {
+    Database db = await DbHelper().initDB();
+    return db.update(
+      'EVENTO',
+      {'inscrito': inscrito ? 1 : 0},
+      where: 'id=?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> atualizarFavorito(int id, bool favorito) async {
+    Database db = await DbHelper().initDB();
+    return db.update(
+      'EVENTO',
+      {'favorito': favorito ? 1 : 0},
+      where: 'id=?',
+      whereArgs: [id],
+    );
   }
 }

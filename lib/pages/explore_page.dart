@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/widget/build_post.dart';
 import 'pesquisar_page.dart';
+import 'notificacoes_page.dart';
 import '/db/post_dao.dart';
 import '/domain/post.dart';
 import 'criar_page.dart';
@@ -75,17 +76,23 @@ class _ExploreState extends State<Explore> {
 
   Widget _buildLeading() {
     return Builder(
-      builder: (BuildContext context) =>
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+      builder: (BuildContext context) => IconButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
+          );
+        },
+        icon: const Icon(Icons.notifications),
+      ),
     );
   }
 
   Widget _buildTitle() {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const pesquisar_page()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const pesquisar_page()));
       },
       child: Container(
         height: 40,
@@ -93,26 +100,17 @@ class _ExploreState extends State<Explore> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: Theme
-                .of(context)
-                .colorScheme
-                .onPrimary,
+            color: Theme.of(context).colorScheme.onPrimary,
             width: 1.0,
           ),
         ),
         child: Row(
           children: [
-            Icon(Icons.search, color: Theme
-                .of(context)
-                .colorScheme
-                .onPrimary),
+            Icon(Icons.search, color: Theme.of(context).colorScheme.onPrimary),
             const SizedBox(width: 8),
             BuildText(
               'Pesquisar',
-              color: Theme
-                  .of(context)
-                  .colorScheme
-                  .onPrimary,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: 16,
             ),
           ],
@@ -121,17 +119,16 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-
   Widget _buildAction() {
     return IconButton(
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-          MaterialPageRoute(
-            builder: (context) => const CriarPost(),
-            fullscreenDialog: true,
-          ),
-        );
+              MaterialPageRoute(
+                builder: (context) => const CriarPost(),
+                fullscreenDialog: true,
+              ),
+            );
         if (criou == true) {
           recarregar();
         }

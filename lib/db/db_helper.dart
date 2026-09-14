@@ -91,26 +91,49 @@ class DbHelper {
       horario TEXT NOT NULL,
       local TEXT NOT NULL,
       autor TEXT NOT NULL,
-      iconCodePoint INTEGER NOT NULL,
-      iconFontFamily TEXT,
-      cor INTEGER NOT NULL
+      cor INTEGER NOT NULL,
+      inscrito INTEGER DEFAULT 0,
+      favorito INTEGER DEFAULT 0
     ); ''';
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03/2026', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', ${Icons.event.codePoint}, '${Icons.event.fontFamily}', ${Colors.lightBlueAccent.toARGB32()})";
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03/2026', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', ${Colors.lightBlueAccent.toARGB32()})";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06/2026', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', ${Icons.eco.codePoint}, '${Icons.eco.fontFamily}', ${Colors.lightGreen.toARGB32()})";
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06/2026', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', ${Colors.lightGreen.toARGB32()})";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('Abril Índigena', '16/04/2026', '9:30', 'Ifal Campus Arapiraca', 'Sante', ${Icons.event.codePoint}, '${Icons.event.fontFamily}', ${Colors.redAccent.toARGB32()})";
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Abril Índigena', '16/04/2026', '9:30', 'Ifal Campus Arapiraca', 'Sante', ${Colors.redAccent.toARGB32()})";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, iconCodePoint, iconFontFamily, cor) VALUES ('V Festival de Arte', '04/12/2024', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', ${Icons.palette.codePoint}, '${Icons.event.fontFamily}', ${Colors.yellow.toARGB32()})";
+        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('V Festival de Arte', '04/12/2024', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', ${Colors.yellow.toARGB32()})";
+    await db.execute(sql);
+
+    sql = '''CREATE TABLE EMPRESTIMO (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tituloLivro TEXT NOT NULL,
+      autorLivro TEXT,
+      capaUrl TEXT,
+      isbn TEXT,
+      dataEmprestimo TEXT NOT NULL,
+      dataPrevista TEXT NOT NULL,
+      dataDevolucao TEXT,
+      renovacoes INTEGER DEFAULT 0
+    ); ''';
+    await db.execute(sql);
+
+    sql = '''CREATE TABLE NOTIFICACAO (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      titulo TEXT NOT NULL,
+      mensagem TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      data TEXT NOT NULL,
+      lida INTEGER DEFAULT 0
+    ); ''';
     await db.execute(sql);
   }
 }
