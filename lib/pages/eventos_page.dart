@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/widget/build_cardEvento.dart';
-import '/db/evento_dao.dart';
+import '/api/eventos_api.dart';
 import '/domain/evento.dart';
 import '/cores.dart';
 
@@ -18,12 +18,12 @@ class _EventosState extends State<Eventos> {
   @override
   void initState() {
     super.initState();
-    futureListEventos = EventoDao().listarEventos();
+    futureListEventos = EventosApi().listarEventos();
   }
 
   void recarregar() {
     setState(() {
-      futureListEventos = EventoDao().listarEventos();
+      futureListEventos = EventosApi().listarEventos();
     });
   }
 
