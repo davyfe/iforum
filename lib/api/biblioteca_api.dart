@@ -38,7 +38,11 @@ class BibliotecaApi {
 
     final response = await dio.get(
       'https://openlibrary.org/search.json',
-      queryParameters: {parametro: termo, 'limit': 20},
+      queryParameters: {
+        parametro: termo,
+        'limit': 20,
+        'fields': 'key,title,author_name,first_publish_year,cover_i,isbn',
+      },
     );
 
     List<Livro> lista = [];

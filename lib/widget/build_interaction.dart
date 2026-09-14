@@ -43,9 +43,7 @@ class _BuildInteractionBarState extends State<BuildInteractionBar> {
             ],
           ),
         ),
-        if(widget.comentarios
-            .toString()
-            .isNotEmpty)...[
+        if (widget.comentarios != null) ...[
           const SizedBox(width: 8),
           BuildChip(
             conteudo: Row(
@@ -71,16 +69,14 @@ class _BuildInteractionBarState extends State<BuildInteractionBar> {
             ],
           ),
         ),
-        if(widget.reacao!.isNotEmpty)...[
+        if (widget.reacao != null && widget.reacao!.isNotEmpty) ...[
           BuildChip(
             conteudo: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                BuildText(widget.reacao!),
-              ],
+              children: [BuildText(widget.reacao!)],
             ),
           ),
-        ]
+        ],
       ],
     );
   }

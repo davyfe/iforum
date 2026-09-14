@@ -25,6 +25,7 @@ class Evento {
   });
 
   Evento.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     titulo = json['titulo'] ?? 'Evento sem título';
     data = json['data'] ?? '';
     horario = json['horario'] ?? '';

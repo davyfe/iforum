@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 class BuildChip extends StatefulWidget {
   final Widget conteudo;
+  final Color? cor;
 
-  const BuildChip({
-    super.key,
-    required this.conteudo,
-  });
+  const BuildChip({super.key, required this.conteudo, this.cor});
 
   @override
   State<BuildChip> createState() => _BuildChipState();
@@ -24,6 +22,7 @@ class _BuildChipState extends State<BuildChip> {
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
       showCheckmark: false,
       onPressed: null,
+      color: widget.cor != null ? WidgetStateProperty.all(widget.cor) : null,
     );
   }
 }
