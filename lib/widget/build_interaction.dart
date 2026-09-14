@@ -71,7 +71,7 @@ class _BuildInteractionBarState extends State<BuildInteractionBar> {
             ],
           ),
         ),
-        if(widget.reacao!.isNotEmpty)...[
+        if((widget.reacao ?? '').isNotEmpty)...[
           BuildChip(
             conteudo: Row(
               mainAxisSize: MainAxisSize.min,

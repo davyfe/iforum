@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/api/noticia_api.dart';
 import '/widget/build_noticia.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
-import '/db/noticia_dao.dart';
+import 'package:iforum/api/noticia_api.dart';
 import '/domain/noticia.dart';
+import '/pages/noticias_ifal_page.dart';
 
 class Noticias extends StatefulWidget {
   const Noticias({super.key});
@@ -18,12 +20,12 @@ class _NoticiasState extends State<Noticias> {
   @override
   void initState() {
     super.initState();
-    futureListaNoticias = NoticiaDao().listarNoticias();
+    futureListaNoticias = NoticiaApi().listarNoticias();
   }
 
   void recarregar() {
     setState(() async {
-      futureListaNoticias = NoticiaDao().listarNoticias();
+      futureListaNoticias = NoticiaApi().listarNoticias();
     });
   }
 
@@ -36,6 +38,16 @@ class _NoticiasState extends State<Noticias> {
         title: BuildText('Notícias', bold: true, color: Colors.white, size: 20),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.language_outlined),
+            tooltip: 'Notícias Gerais',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NoticiasIfal()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
             onPressed: recarregar,
