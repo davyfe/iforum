@@ -80,7 +80,7 @@ class _BibliotecaState extends State<Biblioteca> {
       ),
       body: Column(
         children: [
-          _buildBusca(),
+          _buildBarraPesquisa(),
           Expanded(
             child: futureBusca != null
                 ? _buildResultadoBusca()
@@ -91,48 +91,43 @@ class _BibliotecaState extends State<Biblioteca> {
     );
   }
 
-  Widget _buildBusca() {
+  Widget _buildBarraPesquisa() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
+      child: Row(
         children: [
-          TextField(
-            controller: _buscaController,
-            onSubmitted: _pesquisar,
-            decoration: InputDecoration(
-              hintText: tipoBusca == 'isbn'
-                  ? 'Digite o ISBN...'
-                  : 'Pesquisar livros...',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _buscaController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _buscaController.clear();
-                        setState(() => futureBusca = null);
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 14,
-                horizontal: 16,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          IconButton(
+            onPressed: _abrirFiltro,
+            icon: Icon(
+              Icons.filter_list,
+              color: tipoBusca != 'geral' ? Cores.verde : Cores.textoTerciario,
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _buscaController,
+              onChanged: _pesquisar,
+              decoration: InputDecoration(
+                hintText: tipoBusca == 'isbn'
+                    ? 'Digite o ISBN...'
+                    : 'Pesquisar livros...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          _buildFiltrosBusca(),
         ],
       ),
     );
   }
 
-  Widget _buildFiltrosBusca() {
+  void _abrirFiltro() {
     final opcoes = {
       'geral': 'Geral',
       'titulo': 'Título',
@@ -140,30 +135,52 @@ class _BibliotecaState extends State<Biblioteca> {
       'isbn': 'ISBN',
     };
 
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: opcoes.entries.map((entry) {
-          final selecionado = tipoBusca == entry.key;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(entry.value),
-              selected: selecionado,
-              selectedColor: Cores.verde,
-              labelStyle: TextStyle(
-                color: selecionado ? Colors.white : Colors.black87,
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            String valorSelecionado = tipoBusca;
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              onSelected: (_) {
-                setState(() => tipoBusca = entry.key);
-                if (_buscaController.text.isNotEmpty)
-                  _pesquisar(_buscaController.text);
-              },
-            ),
-          );
-        }).toList(),
-      ),
+              title: BuildText('Filtrar busca', bold: true, size: 18),
+              content: RadioGroup<String>(
+                groupValue: valorSelecionado,
+                onChanged: (valor) {
+                  setStateDialog(() => valorSelecionado = valor ?? 'geral');
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: opcoes.entries.map((entry) {
+                    return RadioListTile<String>(
+                      value: entry.key,
+                      title: BuildText(entry.value),
+                      activeColor: Cores.verde,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setState(() => tipoBusca = valorSelecionado);
+                    if (_buscaController.text.isNotEmpty) {
+                      _pesquisar(_buscaController.text);
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: BuildText('Aplicar', color: Cores.verde, bold: true),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

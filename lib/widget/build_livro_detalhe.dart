@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '/domain/livro.dart';
 import '/domain/emprestimo.dart';
 import '/domain/notificacao.dart';
-import '/db/emprestimo_dao.dart';
+import '/api/emprestimo_api.dart';
 import '/db/notificacao_dao.dart';
 import '/cores.dart';
 import 'build_text.dart';
@@ -27,7 +27,7 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
   }
 
   Future<void> _verificarEmprestimo() async {
-    final emprestado = await EmprestimoDao().estaEmprestado(widget.livro.isbn);
+    final emprestado = await EmprestimoApi().estaEmprestado(widget.livro.isbn);
     if (mounted) setState(() => _jaEmprestado = emprestado);
   }
 
@@ -41,7 +41,7 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
     final agora = DateTime.now();
     final previsao = agora.add(const Duration(days: 14));
 
-    await EmprestimoDao().emprestar(
+    await EmprestimoApi().emprestar(
       Emprestimo(
         tituloLivro: widget.livro.titulo,
         autorLivro: widget.livro.autor,

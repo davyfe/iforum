@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
-import '/db/emprestimo_dao.dart';
+import '/api/emprestimo_api.dart';
 import '/domain/emprestimo.dart';
 import '/cores.dart';
 
@@ -25,8 +25,8 @@ class _EmprestimosPageState extends State<EmprestimosPage>
   }
 
   void _carregar() {
-    futureAtuais = EmprestimoDao().listarAtuais();
-    futureAntigos = EmprestimoDao().listarAntigos();
+    futureAtuais = EmprestimoApi().listarAtuais();
+    futureAntigos = EmprestimoApi().listarAntigos();
   }
 
   void recarregar() => setState(_carregar);
@@ -45,7 +45,7 @@ class _EmprestimosPageState extends State<EmprestimosPage>
   }
 
   Future<void> _devolver(Emprestimo emprestimo) async {
-    await EmprestimoDao().devolver(
+    await EmprestimoApi().devolver(
       emprestimo.id!,
       _formatarData(DateTime.now()),
     );
@@ -58,7 +58,7 @@ class _EmprestimosPageState extends State<EmprestimosPage>
     final novaPrevisao = _parseData(
       emprestimo.dataPrevista,
     ).add(const Duration(days: 14));
-    await EmprestimoDao().renovar(
+    await EmprestimoApi().renovar(
       emprestimo.id!,
       _formatarData(novaPrevisao),
       emprestimo.renovacoes + 1,
@@ -142,7 +142,7 @@ class _EmprestimosPageState extends State<EmprestimosPage>
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
