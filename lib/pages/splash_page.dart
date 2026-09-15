@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/cores.dart';
+import '/db/shared_prefs.dart';
 import 'package:iforum/pages/login_page.dart';
 import 'package:iforum/pages/home_page.dart';
 
@@ -38,7 +39,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<bool> _checarStatusLogin() async {
-    return false;
+    return SharedPrefs().getUserStatus();
   }
 
   @override
