@@ -2,64 +2,85 @@ import 'package:flutter/material.dart';
 import '/cores.dart';
 import '/api/user_api.dart';
 import '/db/shared_prefs.dart';
-import 'package:iforum/pages/home_page.dart';
-import 'registro_page.dart';
+import '/domain/user.dart';
+import 'home_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class RegistroPage extends StatefulWidget {
+  const RegistroPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegistroPage> createState() => _RegistroPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController();
+class _RegistroPageState extends State<RegistroPage> {
+  final _usuarioController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _confirmarSenhaController = TextEditingController();
   bool _ocultarSenha = true;
+  bool _ocultarConfirmarSenha = true;
   bool _carregando = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usuarioController.dispose();
     _senhaController.dispose();
+    _confirmarSenhaController.dispose();
     super.dispose();
   }
 
-  Future<void> _entrar() async {
-    final usuario = _emailController.text.trim();
-    final senha = _senhaController.text;
+  void _mostrarErro(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensagem)),
+    );
+  }
 
-    if (usuario.isEmpty || senha.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha usuário e senha.')),
-      );
+  Future<void> _cadastrar() async {
+    final usuario = _usuarioController.text.trim();
+    final senha = _senhaController.text;
+    final confirmarSenha = _confirmarSenhaController.text;
+
+    if (usuario.isEmpty || senha.isEmpty || confirmarSenha.isEmpty) {
+      _mostrarErro('Preencha todos os campos.');
+      return;
+    }
+
+    if (senha.length < 4) {
+      _mostrarErro('A senha deve ter pelo menos 4 caracteres.');
+      return;
+    }
+
+    if (senha != confirmarSenha) {
+      _mostrarErro('As senhas não coincidem.');
       return;
     }
 
     setState(() => _carregando = true);
 
     try {
-      final autenticado = await UserApi().login(usuario, senha);
+      final jaExiste = await UserApi().usernameExiste(usuario);
+
+      if (jaExiste) {
+        if (!mounted) return;
+        _mostrarErro('Esse nome de usuário já está em uso.');
+        return;
+      }
+
+      await UserApi().registrar(User(usuario, senha));
+      await SharedPrefs().setUserStatus(true);
 
       if (!mounted) return;
 
-      if (autenticado) {
-        await SharedPrefs().setUserStatus(true);
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuário ou senha inválidos.')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao conectar. Tente novamente.')),
-      );
+      _mostrarErro('Erro ao conectar. Tente novamente.');
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
@@ -125,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 16),
                   const Text(
-                    'Entrar na sua conta',
+                    'Criar sua conta',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -134,10 +155,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: _usuarioController,
                     decoration: InputDecoration(
-                      labelText: 'E-mail ou usuário',
+                      labelText: 'Nome de usuário',
                       labelStyle: TextStyle(color: Cores.textoSecundario),
                       prefixIcon: Icon(Icons.person_outline, color: Cores.verde),
                       filled: true,
@@ -193,22 +213,47 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Esqueceu a senha?',
-                        style: TextStyle(
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _confirmarSenhaController,
+                    obscureText: _ocultarConfirmarSenha,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar senha',
+                      labelStyle: TextStyle(color: Cores.textoSecundario),
+                      prefixIcon: Icon(Icons.lock_outline, color: Cores.verde),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _ocultarConfirmarSenha
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Cores.verde,
-                          fontWeight: FontWeight.w600,
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _ocultarConfirmarSenha = !_ocultarConfirmarSenha;
+                          });
+                        },
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Cores.verde, width: 2),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: _carregando ? null : _entrar,
+                    onPressed: _carregando ? null : _cadastrar,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Cores.verde,
                       foregroundColor: Colors.white,
@@ -228,7 +273,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     )
                         : const Text(
-                      'ENTRAR',
+                      'CADASTRAR',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -240,18 +285,13 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Ainda não tem conta? ',
+                        'Já tem uma conta? ',
                         style: TextStyle(color: Cores.textoSecundario),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegistroPage()),
-                          );
-                        },
+                        onTap: () => Navigator.of(context).pop(),
                         child: Text(
-                          'Cadastre-se',
+                          'Entrar',
                           style: TextStyle(
                             color: Cores.verde,
                             fontWeight: FontWeight.bold,
