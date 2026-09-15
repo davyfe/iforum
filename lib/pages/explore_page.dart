@@ -41,13 +41,13 @@ class _ExploreState extends State<Explore> {
   }
 
   List<Post> _aplicarFiltros(List<Post> posts) {
-    var lista;
+    var lista = posts;
 
     if (termoPesquisa.isNotEmpty) {
       lista = lista
           .where(
             (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
-          )
+      )
           .toList();
     }
 
@@ -189,11 +189,11 @@ class _ExploreState extends State<Explore> {
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-              MaterialPageRoute(
-                builder: (context) => const CriarPost(),
-                fullscreenDialog: true,
-              ),
-            );
+          MaterialPageRoute(
+            builder: (context) => const CriarPost(),
+            fullscreenDialog: true,
+          ),
+        );
         if (criou == true) {
           recarregar();
         }
