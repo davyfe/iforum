@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _entrar() async {
     final usuario = _emailController.text.trim();
-    final senha = _senhaController.text;
+    final senha = _senhaController.text.trim();
 
     if (usuario.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
