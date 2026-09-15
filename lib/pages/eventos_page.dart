@@ -13,7 +13,7 @@ class Eventos extends StatefulWidget {
 }
 
 class _EventosState extends State<Eventos> {
-  late Future<List<Evento>> futureListEventos;
+  late Future<List<Evento>> futureListaEventos;
   final _pesquisaController = TextEditingController();
 
   String aba = 'programacao';
@@ -23,7 +23,7 @@ class _EventosState extends State<Eventos> {
   @override
   void initState() {
     super.initState();
-    futureListEventos = _carregarEventos();
+    futureListaEventos = EventosApi().listarEventos();
   }
 
   @override
@@ -32,15 +32,14 @@ class _EventosState extends State<Eventos> {
     super.dispose();
   }
 
-  Future<List<Evento>> _carregarEventos() async {
-    final eventosSalvos = await EventosApi().listarEventos();
-    return eventosSalvos;
-  }
-
   void recarregar() {
     setState(() {
-      futureListEventos = _carregarEventos();
+      futureListaEventos = EventosApi().listarEventos();
     });
+  }
+
+  void _atualizarLista() {
+    setState(() {});
   }
 
   List<Evento> _aplicarFiltros(List<Evento> eventos) {
@@ -120,7 +119,7 @@ class _EventosState extends State<Eventos> {
           _buildBarraPesquisa(),
           Expanded(
             child: FutureBuilder(
-              future: futureListEventos,
+              future: futureListaEventos,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final lista = _aplicarFiltros(snapshot.requireData);
@@ -240,7 +239,7 @@ class _EventosState extends State<Eventos> {
       padding: const EdgeInsets.only(top: 8, bottom: 16),
       itemCount: listaEventos.length,
       itemBuilder: (context, i) =>
-          BuildEventoCard(evento: listaEventos[i], onAlterado: recarregar),
+          BuildEventoCard(evento: listaEventos[i], onAlterado: _atualizarLista),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/domain/evento.dart';
-import '/db/evento_dao.dart';
+import '/api/evento_api.dart';
 import '/cores.dart';
 import 'build_text.dart';
 
@@ -27,14 +27,23 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
   Future<void> _alternarInscricao() async {
     setState(() => _carregando = true);
 
-    await EventoDao().atualizarInscricao(widget.evento.id!, !_inscrito);
+    final novoValor = !_inscrito;
+    final sucesso = await EventosApi().atualizarInscricao(
+      widget.evento.id!,
+      novoValor,
+    );
 
-    setState(() {
-      _inscrito = !_inscrito;
-      _carregando = false;
-    });
-
-    widget.onAlterado?.call();
+    if (sucesso) {
+      widget.evento.inscrito = novoValor;
+      setState(() {
+        _inscrito = novoValor;
+        _carregando = false;
+      });
+      widget.onAlterado?.call();
+    } else {
+      setState(() => _carregando = false);
+      // opcional: mostrar um SnackBar avisando que falhou
+    }
   }
 
   Future<void> _confirmarDesinscricao() async {
@@ -128,10 +137,10 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
                   ? null
                   : (_inscrito ? _confirmarDesinscricao : _alternarInscricao),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _inscrito ? Colors.white : Cores.verde,
+                backgroundColor: _inscrito ? Colors.white : widget.evento.cor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 side: BorderSide(
-                  color: Cores.verde,
+                  color: widget.evento.cor,
                   width: _inscrito ? 1.5 : 0,
                 ),
                 shape: const StadiumBorder(),
@@ -143,13 +152,13 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: _inscrito ? Cores.verde : Colors.white,
+                        color: _inscrito ? widget.evento.cor : Colors.white,
                       ),
                     )
                   : BuildText(
                       _inscrito ? 'Desinscrever-se' : 'Inscrever-se',
                       bold: true,
-                      color: _inscrito ? Cores.verde : Colors.white,
+                      color: _inscrito ? widget.evento.cor : Colors.white,
                     ),
             ),
           ),
