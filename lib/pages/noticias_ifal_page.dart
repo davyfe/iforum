@@ -33,7 +33,7 @@ class _NoticiasIfalState extends State<NoticiasIfal> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Cores.verde,
-        title: BuildText('Notícias do IFAL', bold: true, color: Colors.white, size: 20),
+        title: BuildText('Notícias Gerais do IFAL', bold: true, color: Colors.white, size: 20),
         centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: recarregar),
