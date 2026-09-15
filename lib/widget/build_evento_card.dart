@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '/widget/build_chip.dart';
 import '/widget/build_divider_pontilhado.dart';
 import '/widget/build_evento_detalhe.dart';
 import '/domain/evento.dart';
-import '/db/evento_dao.dart';
+import '/api/evento_api.dart';
 import '/cores.dart';
 import 'build_text.dart';
 
@@ -19,11 +18,26 @@ class BuildEventoCard extends StatefulWidget {
 
 class _BuildEventoCardState extends State<BuildEventoCard> {
   Future<void> _alternarFavorito() async {
-    await EventoDao().atualizarFavorito(
-      widget.evento.id!,
-      !widget.evento.favorito,
-    );
+    final novoValor = !widget.evento.favorito;
+
+    // atualiza a UI na hora (otimista)
+    setState(() {
+      widget.evento.favorito = novoValor;
+    });
     widget.onAlterado?.call();
+
+    // tenta persistir na API; se falhar, desfaz
+    final sucesso = await EventosApi().atualizarFavorito(
+      widget.evento.id!,
+      novoValor,
+    );
+
+    if (!sucesso) {
+      setState(() {
+        widget.evento.favorito = !novoValor;
+      });
+      widget.onAlterado?.call();
+    }
   }
 
   void _abrirDetalhe() {
@@ -97,11 +111,22 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                 borderRadius: BorderRadius.circular(16),
                 onTap: _abrirDetalhe,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(
+                    top: 16,
+                    left: 16,
+                    right: 16,
+                    bottom: 7,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BuildText(evento.titulo, bold: true, size: 16),
+                      BuildText(
+                        evento.titulo,
+                        bold: true,
+                        size: 16,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 10),
                       const BuildDividerPontilhado(cor: Colors.black26),
                       const SizedBox(height: 5),
@@ -124,7 +149,6 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                       ),
                       const SizedBox(height: 5),
                       const BuildDividerPontilhado(cor: Colors.black26),
-                      const SizedBox(height: 5),
                       Row(
                         children: [
                           Icon(
@@ -139,14 +163,19 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                             size: 13,
                           ),
                           const Spacer(),
-                          InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: evento.id != null ? _alternarFavorito : null,
-                            child: Icon(
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity:
+                                VisualDensity.compact, // reforça, opcional
+                            splashRadius: 14,
+                            onPressed: evento.id != null
+                                ? _alternarFavorito
+                                : null,
+                            icon: Icon(
                               evento.favorito
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              size: 25,
                               color: evento.favorito
                                   ? Colors.redAccent
                                   : Cores.textoTerciario,

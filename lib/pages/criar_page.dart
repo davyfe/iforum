@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/widget/build_select_image.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/post.dart';
@@ -14,6 +15,7 @@ class CriarPost extends StatefulWidget {
 class _CriarPostState extends State<CriarPost> {
   final _tituloC = TextEditingController();
   final _conteudoC = TextEditingController();
+  late String _urlImagem = '';
   bool _salvo = false;
 
   @override
@@ -38,6 +40,7 @@ class _CriarPostState extends State<CriarPost> {
       autor: 'pdrolopes',
       tempo: 'agora mesmo',
       conteudo: _conteudoC.text.trim(),
+      urlImagem: _urlImagem,
     );
     await PostDao().inserirPost(post);
     setState(() => _salvo = false);
@@ -144,6 +147,21 @@ class _CriarPostState extends State<CriarPost> {
         _buildIcones(Icons.link),
         _buildIcones(Icons.attach_file),
         _buildIcones(Icons.image),
+        IconButton(
+          icon: Icon(Icons.image_search),
+          onPressed: () async {
+            final urlEscolhida = await showDialog<String>(
+              context: context,
+              builder: (context) => SelecionarImagemDialog(categoria: 'travel'),
+            );
+
+            if (urlEscolhida != null) {
+              setState(() {
+                _urlImagem = urlEscolhida;
+              });
+            }
+          },
+        ),
         _buildIcones(Icons.play_circle_filled),
       ],
     );
