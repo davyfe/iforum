@@ -41,7 +41,7 @@ class _ExploreState extends State<Explore> {
   }
 
   List<Post> _aplicarFiltros(List<Post> posts) {
-    var lista;
+    var lista = posts;
 
     if (termoPesquisa.isNotEmpty) {
       lista = lista

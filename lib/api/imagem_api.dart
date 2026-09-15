@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 class ImagemApi {
   final dio = Dio();
-  static const String _accessKey = "1064303";
+  static const String _accessKey = "WsATGIxzml8b6aSLmNvoHsoJbwrv7WYOTmLR4Lp4-ow";
 
 
-  Future<List<String>> buscaPorImagem(String categoria, {int quantidade = 9}) async {
+  Future<List<String>> buscaPorImagem(String categoria, {int quantidade = 16}) async {
     try {
       final response = await dio.get(
         "https://api.unsplash.com/search/photos",

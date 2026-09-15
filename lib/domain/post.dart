@@ -7,6 +7,7 @@ class Post {
   late int comentarios;
   late bool anexo;
   late String urlImagem;
+  late bool favorito;   // <-- novo campo
 
   Post({
     required this.titulo,
@@ -17,6 +18,7 @@ class Post {
     this.comentarios = 0,
     this.anexo = false,
     this.urlImagem = "",
+    this.favorito = false,   // <-- novo
   });
 
   Post.fromJson(Map<String, dynamic> json) {
@@ -28,5 +30,6 @@ class Post {
     comentarios = json['comentarios'] ?? 0;
     anexo = json['anexo'] == 1 || json['anexo'] == true;
     urlImagem = json['urlImagem'] ?? "";
+    favorito = json['favorito'] == 1 || json['favorito'] == true;   // <-- novo
   }
 }

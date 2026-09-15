@@ -152,7 +152,7 @@ class _CriarPostState extends State<CriarPost> {
           onPressed: () async {
             final urlEscolhida = await showDialog<String>(
               context: context,
-              builder: (context) => SelecionarImagemDialog(categoria: 'travel'),
+              builder: (context) => SelecionarImagemDialog(),
             );
 
             if (urlEscolhida != null) {
