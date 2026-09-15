@@ -49,7 +49,7 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
         children: [
           Container(
             margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               color: evento.cor,
               borderRadius: BorderRadius.circular(12),
@@ -101,11 +101,6 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BuildChip(
-                        conteudo: BuildText('Tipo Evento', color: Colors.white),
-                        cor: evento.cor,
-                      ),
-                      const SizedBox(height: 10),
                       BuildText(evento.titulo, bold: true, size: 16),
                       const SizedBox(height: 10),
                       const BuildDividerPontilhado(cor: Colors.black26),
@@ -138,21 +133,20 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                             color: Cores.textoTerciario,
                           ),
                           const SizedBox(width: 4),
-                          Expanded(
-                            child: BuildText(
-                              evento.autor,
-                              color: Cores.textoTerciario,
-                              size: 13,
-                            ),
+                          BuildText(
+                            evento.autor,
+                            color: Cores.textoTerciario,
+                            size: 13,
                           ),
-                          IconButton(
-                            onPressed: evento.id != null
-                                ? _alternarFavorito
-                                : null,
-                            icon: Icon(
+                          const Spacer(),
+                          InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: evento.id != null ? _alternarFavorito : null,
+                            child: Icon(
                               evento.favorito
                                   ? Icons.favorite
                                   : Icons.favorite_border,
+                              size: 25,
                               color: evento.favorito
                                   ? Colors.redAccent
                                   : Cores.textoTerciario,

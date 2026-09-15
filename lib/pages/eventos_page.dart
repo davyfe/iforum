@@ -34,14 +34,7 @@ class _EventosState extends State<Eventos> {
   }
 
   Future<List<Evento>> _carregarEventos() async {
-    final eventosSalvos = await EventoDao().listarEventos();
-    if (eventosSalvos.isEmpty) {
-      final eventosApi = await EventosApi().listarEventos();
-      for (var evento in eventosApi) {
-        await EventoDao().inserirEvento(evento);
-      }
-      return EventoDao().listarEventos();
-    }
+    final eventosSalvos = await EventosApi().listarEventos();
     return eventosSalvos;
   }
 
