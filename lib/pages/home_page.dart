@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/cores.dart';
 import 'perfil_page.dart';
 import 'explore_page.dart';
 import 'noticias_page.dart';
@@ -26,6 +27,7 @@ class _HomeState extends State<Home> {
 
   buildBottomNavBar() {
     return BottomNavigationBar(
+      backgroundColor: Cores.fundo,
       currentIndex: selectedIndex,
       selectedItemColor: Colors.green,
       showUnselectedLabels: true,

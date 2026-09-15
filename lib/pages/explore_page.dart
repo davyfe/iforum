@@ -47,7 +47,7 @@ class _ExploreState extends State<Explore> {
       lista = lista
           .where(
             (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
-          )
+      )
           .toList();
     }
 
@@ -96,50 +96,57 @@ class _ExploreState extends State<Explore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Cores.fundo,
       appBar: AppBar(
-        leading: _buildLeading(),
-        title: _buildBarraPesquisa(),
-        actions: [_buildAction()],
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Cores.verde,
-        iconTheme: IconThemeData(color: Colors.white),
+        title: BuildText('IFÓRUM', bold: true, color: Colors.white, size: 20),
+        centerTitle: true,
+        actions: [_buildAction()],
       ),
-      body: FutureBuilder(
-        future: futureListaPosts,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final lista = _aplicarFiltros(snapshot.requireData);
-            if (lista.isEmpty) {
-              return Center(
-                child: BuildText(
-                  'Nenhum post encontrado',
-                  color: Cores.textoTerciario,
-                ),
-              );
-            }
-            return buildListView(lista);
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-                  const SizedBox(height: 8),
-                  BuildText('Erro ao carregar posts', color: Colors.red),
-                  BuildText(snapshot.error.toString(), color: Colors.red),
-                ],
-              ),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
+      body: Column(
+        children: [
+          _buildBarraPesquisa(),
+          Expanded(child: FutureBuilder(
+            future: futureListaPosts,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final lista = _aplicarFiltros(snapshot.requireData);
+                if (lista.isEmpty) {
+                  return Center(
+                    child: BuildText(
+                      'Nenhum post encontrado',
+                      color: Cores.textoTerciario,
+                    ),
+                  );
+                }
+                return buildListView(lista);
+              }
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.grey, size: 48),
+                      const SizedBox(height: 8),
+                      BuildText('Erro ao carregar posts', color: Colors.red),
+                      BuildText(snapshot.error.toString(), color: Colors.red),
+                    ],
+                  ),
+                );
+              }
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),)
+        ],
+      )
     );
   }
 
   Widget _buildBarraPesquisa() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
       child: Row(
         children: [
           IconButton(
@@ -171,7 +178,7 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-  Builder _buildLeading() {
+  Builder _buildAction() {
     return Builder(
       builder: (BuildContext context) => IconButton(
         onPressed: () {
@@ -184,21 +191,22 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-  IconButton _buildAction() {
-    return IconButton(
+  FloatingActionButton _buildFloatingActionButton() {
+    return FloatingActionButton(
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-              MaterialPageRoute(
-                builder: (context) => const CriarPost(),
-                fullscreenDialog: true,
-              ),
-            );
+          MaterialPageRoute(
+            builder: (context) => const CriarPost(),
+            fullscreenDialog: true,
+          ),
+        );
         if (criou == true) {
           recarregar();
         }
       },
-      icon: const Icon(Icons.add),
+      child: Icon(Icons.edit, color: Colors.white),
+      backgroundColor: Cores.verde,
     );
   }
 
