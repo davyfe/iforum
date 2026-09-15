@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '/cores.dart';
+import '/api/user_api.dart';
+import '/db/shared_prefs.dart';
 import 'package:iforum/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -13,12 +15,53 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   bool _ocultarSenha = true;
+  bool _carregando = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _senhaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _entrar() async {
+    final usuario = _emailController.text.trim();
+    final senha = _senhaController.text;
+
+    if (usuario.isEmpty || senha.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha usuário e senha.')),
+      );
+      return;
+    }
+
+    setState(() => _carregando = true);
+
+    try {
+      final autenticado = await UserApi().login(usuario, senha);
+
+      if (!mounted) return;
+
+      if (autenticado) {
+        await SharedPrefs().setUserStatus(true);
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Usuário ou senha inválidos.')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao conectar. Tente novamente.')),
+      );
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
   }
 
   @override
@@ -164,14 +207,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Home(),
-                        ),
-                      );
-                    },
+                    onPressed: _carregando ? null : _entrar,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Cores.verde,
                       foregroundColor: Colors.white,
@@ -181,7 +217,16 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: _carregando
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : const Text(
                       'ENTRAR',
                       style: TextStyle(
                         fontSize: 16,
