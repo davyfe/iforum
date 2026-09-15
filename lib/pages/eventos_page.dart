@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/widget/build_evento_card.dart';
-import '/api/eventos_api.dart';
-import '/db/evento_dao.dart';
+import '/api/evento_api.dart';
 import '/domain/evento.dart';
 import '/cores.dart';
 

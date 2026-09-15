@@ -119,10 +119,7 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
             ],
           ),
           const SizedBox(height: 20),
-          BuildText(
-            'Descrição em breve.', // placeholder
-            color: Cores.textoTerciario,
-          ),
+          BuildText('Descrição em breve.', color: Cores.textoTerciario),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,

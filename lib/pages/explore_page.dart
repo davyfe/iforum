@@ -3,7 +3,7 @@ import '/widget/build_text.dart';
 import '/widget/build_post.dart';
 import 'pesquisar_page.dart';
 import 'notificacoes_page.dart';
-import '/db/post_dao.dart';
+import '/api/post_api.dart';
 import '/domain/post.dart';
 import 'criar_page.dart';
 import '/cores.dart';
@@ -21,12 +21,12 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
-    futureListaPosts = PostDao().listarPosts();
+    futureListaPosts = PostsApi().listarPosts();
   }
 
   void recarregar() {
     setState(() {
-      futureListaPosts = PostDao().listarPosts();
+      futureListaPosts = PostsApi().listarPosts();
     });
   }
 

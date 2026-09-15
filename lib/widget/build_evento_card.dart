@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '/widget/build_chip.dart';
 import '/widget/build_divider_pontilhado.dart';
 import '/widget/build_evento_detalhe.dart';
 import '/domain/evento.dart';
@@ -101,7 +100,13 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BuildText(evento.titulo, bold: true, size: 16),
+                      BuildText(
+                        evento.titulo,
+                        bold: true,
+                        size: 16,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 10),
                       const BuildDividerPontilhado(cor: Colors.black26),
                       const SizedBox(height: 5),
