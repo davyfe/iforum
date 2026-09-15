@@ -56,6 +56,7 @@ class _CriarPostState extends State<CriarPost> {
       backgroundColor: Cores.fundo,
       resizeToAvoidBottomInset: true, // para aparecer o teclado
       appBar: AppBar(
+        backgroundColor: Cores.fundo,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
           _salvo
