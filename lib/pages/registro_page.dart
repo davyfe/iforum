@@ -83,18 +83,12 @@ class _RegistroPageState extends State<RegistroPage> {
           children: [
             Container(
               width: double.infinity,
+              color: Cores.verde,
               padding: const EdgeInsets.only(
                 top: 80,
                 bottom: 40,
                 left: 24,
                 right: 24,
-              ),
-              decoration: BoxDecoration(
-                color: Cores.verde,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
               ),
               child: Column(
                 children: [

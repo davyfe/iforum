@@ -49,21 +49,16 @@ class _PerfilState extends State<Perfil> {
             top: MediaQuery.of(context).padding.top + 10,
             right: 10,
             child: IconButton(
-              onPressed: () {},
-              icon: IconButton(
-                onPressed: () async {
-                  await SharedPrefs().logout();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                      (r) => false,
-                    );
-                  }
-                },
-                icon: const Icon(Icons.logout, color: Colors.white),
-              ),
+              onPressed: () async {
+                await SharedPrefs().logout();
+                if (context.mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (r) => false,
+                  );
+                }
+              },
+              icon: const Icon(Icons.logout, color: Colors.white),
             ),
           ),
         ],
@@ -88,7 +83,6 @@ class _PerfilState extends State<Perfil> {
           const CircleAvatar(radius: 45, backgroundColor: Colors.white),
           const SizedBox(height: 10),
           BuildText(username, size: 30, bold: true, color: Colors.white),
-          BuildText(username, size: 20, color: Colors.white),
           const SizedBox(height: 4),
           Row(
             children: [

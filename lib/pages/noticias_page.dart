@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:iforum/api/noticia_api.dart';
-import '/widget/build_noticia.dart';
-import '/widget/build_text.dart';
+import '/api/noticia_api.dart';
+import '/api/noticia_ifal_api.dart';
 import '/domain/noticia.dart';
-import '/pages/noticias_ifal_page.dart';
+import '/domain/noticia_ifal.dart';
+import '/widget/build_noticia.dart';
+import '/widget/build_noticia_ifal.dart';
+import '/widget/build_estado.dart';
+import '/widget/build_text.dart';
 
 class Noticias extends StatefulWidget {
   const Noticias({super.key});
@@ -12,18 +15,33 @@ class Noticias extends StatefulWidget {
   State<Noticias> createState() => _NoticiasState();
 }
 
-class _NoticiasState extends State<Noticias> {
-  late Future<List<Noticia>> futureListaNoticias;
+class _NoticiasState extends State<Noticias>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  late Future<List<Noticia>> futureNoticias;
+  late Future<List<NoticiaIfal>> futureNoticiasIfal;
 
   @override
   void initState() {
     super.initState();
-    futureListaNoticias = NoticiaApi().listarNoticias();
+    _tabController = TabController(length: 2, vsync: this);
+    futureNoticias = NoticiaApi().listarNoticias();
+    futureNoticiasIfal = NoticiaIfalApi().listarNoticiasIfal();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void recarregar() {
-    setState(() async {
-      futureListaNoticias = NoticiaApi().listarNoticias();
+    setState(() {
+      if (_tabController.index == 0) {
+        futureNoticias = NoticiaApi().listarNoticias();
+      } else {
+        futureNoticiasIfal = NoticiaIfalApi().listarNoticiasIfal();
+      }
     });
   }
 
@@ -32,55 +50,74 @@ class _NoticiasState extends State<Noticias> {
     return Scaffold(
       appBar: AppBar(
         title: BuildText('Notícias', bold: true, size: 20),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          onTap: (_) => setState(() {}),
+          tabs: const [
+            Tab(text: 'Comunidade'),
+            Tab(text: 'IFAL'),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.language_outlined),
-            tooltip: 'Notícias Gerais',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NoticiasIfal()),
-              );
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
             onPressed: recarregar,
           ),
-          IconButton(icon: const Icon(Icons.search_outlined), onPressed: () {}),
         ],
       ),
-      body: FutureBuilder(
-        future: futureListaNoticias,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Noticia> listaNoticias = snapshot.requireData;
-            return buildListView(listaNoticias);
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-                  const SizedBox(height: 8),
-                  BuildText('Erro ao carregar as notícias', color: Colors.red),
-                  BuildText(snapshot.error.toString(), color: Colors.red),
-                ],
-              ),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
+      body: TabBarView(
+        controller: _tabController,
+        children: [_buildComunidade(), _buildIfal()],
       ),
     );
   }
 
-  ListView buildListView(listaNoticias) {
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: listaNoticias.length,
-      itemBuilder: (context, i) => BuildNoticia(noticia: listaNoticias[i]),
+  Widget _buildComunidade() {
+    return FutureBuilder<List<Noticia>>(
+      future: futureNoticias,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const BuildEstado(
+            icone: Icons.error_outline,
+            mensagem: 'Erro ao carregar notícias',
+          );
+        }
+        final lista = snapshot.data ?? [];
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: lista.length,
+          itemBuilder: (context, i) => BuildNoticia(noticia: lista[i]),
+        );
+      },
+    );
+  }
+
+  Widget _buildIfal() {
+    return FutureBuilder<List<NoticiaIfal>>(
+      future: futureNoticiasIfal,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const BuildEstado(
+            icone: Icons.error_outline,
+            mensagem: 'Erro ao carregar notícias do IFAL',
+          );
+        }
+        final lista = snapshot.data ?? [];
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: lista.length,
+          itemBuilder: (context, i) => BuildNoticiaIfal(noticia: lista[i]),
+        );
+      },
     );
   }
 }

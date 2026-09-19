@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widget/build_estado.dart';
+import '/widget/build_estado.dart';
 import '/widget/build_filtro_dialog.dart';
+import '/widget/build_search_bar.dart';
 import '/api/biblioteca_api.dart';
 import '/domain/livro.dart';
 import '/widget/build_text.dart';
 import '/widget/build_livro_card.dart';
-import '/cores.dart';
 import 'emprestimos_page.dart';
 
 class Biblioteca extends StatefulWidget {
@@ -52,74 +52,6 @@ class _BibliotecaState extends State<Biblioteca> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: BuildText('Biblioteca', bold: true, size: 20),
-        actions: [
-          IconButton(
-            tooltip: 'Meus empréstimos',
-            icon: const Icon(Icons.history_edu_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const EmprestimosPage(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _buildBarraPesquisa(),
-          Expanded(
-            child: futureBusca != null
-                ? _buildResultadoBusca()
-                : _buildPopulares(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBarraPesquisa() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _abrirFiltro,
-            icon: Icon(
-              Icons.filter_list,
-              color: tipoBusca != 'geral' ? Cores.verde : Cores.textoTerciario,
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: _buscaController,
-              onChanged: _pesquisar,
-              decoration: InputDecoration(
-                hintText: tipoBusca == 'isbn'
-                    ? 'Digite o ISBN...'
-                    : 'Pesquisar livros...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _abrirFiltro() async {
     const opcoes = [
       OpcaoFiltro('geral', 'Geral'),
@@ -139,6 +71,42 @@ class _BibliotecaState extends State<Biblioteca> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: BuildText('Biblioteca', bold: true, size: 20),
+        actions: [
+          IconButton(
+            tooltip: 'Meus empréstimos',
+            icon: const Icon(Icons.history_edu_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const EmprestimosPage()),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          BuildSearchBar(
+            controller: _buscaController,
+            hint: tipoBusca == 'isbn'
+                ? 'Digite o ISBN...'
+                : 'Pesquisar livros...',
+            onChanged: _pesquisar,
+            filtroAtivo: tipoBusca != 'geral',
+            onFiltro: _abrirFiltro,
+          ),
+          Expanded(
+            child: futureBusca != null
+                ? _buildResultadoBusca()
+                : _buildPopulares(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPopulares() {
     return FutureBuilder<List<Livro>>(
       future: futurePopulares,
@@ -147,7 +115,7 @@ class _BibliotecaState extends State<Biblioteca> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          BuildEstado(
+          return const BuildEstado(
             icone: Icons.error_outline,
             mensagem: 'Erro ao carregar livros populares.',
           );
@@ -165,11 +133,14 @@ class _BibliotecaState extends State<Biblioteca> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          BuildEstado(icone: Icons.error_outline, mensagem: 'Erro na pesquisa');
+          return const BuildEstado(
+            icone: Icons.error_outline,
+            mensagem: 'Erro na pesquisa',
+          );
         }
         final livros = snapshot.data ?? [];
         if (livros.isEmpty) {
-          BuildEstado(
+          return const BuildEstado(
             icone: Icons.menu_book_outlined,
             mensagem: 'Nenhum livro encontrado',
           );
