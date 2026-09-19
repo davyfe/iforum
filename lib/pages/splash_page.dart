@@ -38,9 +38,8 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
-  Future<bool> _checarStatusLogin() async {
-    return SharedPrefs().getUserStatus();
-  }
+  Future<bool> _checarStatusLogin() async =>
+      (await SharedPrefs().getUsername()) != null;
 
   @override
   Widget build(BuildContext context) {
@@ -57,11 +56,7 @@ class _SplashPageState extends State<SplashPage> {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.forum_rounded,
-                size: 48,
-                color: Cores.verde,
-              ),
+              child: Icon(Icons.forum_rounded, size: 48, color: Cores.verde),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -78,7 +73,7 @@ class _SplashPageState extends State<SplashPage> {
               'Conectando a comunidade acadêmica',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.85),
+                color: Colors.white.withValues(alpha: 0.85),
               ),
             ),
             const SizedBox(height: 48),

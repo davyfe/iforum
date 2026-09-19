@@ -77,14 +77,7 @@ class _EmprestimosPageState extends State<EmprestimosPage>
     return Scaffold(
       backgroundColor: Cores.fundo,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText(
-          'Meus empréstimos',
-          bold: true,
-          color: Colors.white,
-          size: 18,
-        ),
+        title: BuildText('Meus empréstimos', bold: true, size: 20),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,

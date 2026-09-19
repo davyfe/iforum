@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '/db/user_dao.dart';
 import '/cores.dart';
-import '/api/user_api.dart';
 import '/db/shared_prefs.dart';
 import 'package:iforum/pages/home_page.dart';
 import 'registro_page.dart';
@@ -37,31 +37,21 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     setState(() => _carregando = true);
+    final autenticado = await UserDao().login(usuario, senha);
+    if (!mounted) return;
 
-    try {
-      final autenticado = await UserApi().login(usuario, senha);
-
+    if (autenticado) {
+      await SharedPrefs().login(usuario);
       if (!mounted) return;
-
-      if (autenticado) {
-        await SharedPrefs().setUserStatus(true);
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuário ou senha inválidos.')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao conectar. Tente novamente.')),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
       );
-    } finally {
-      if (mounted) setState(() => _carregando = false);
+    } else {
+      setState(() => _carregando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuário ou senha inválidos.')),
+      );
     }
   }
 
@@ -74,7 +64,12 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 80, bottom: 40, left: 24, right: 24),
+              padding: const EdgeInsets.only(
+                top: 80,
+                bottom: 40,
+                left: 24,
+                right: 24,
+              ),
               decoration: BoxDecoration(
                 color: Cores.verde,
                 borderRadius: const BorderRadius.only(
@@ -112,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                     'Conectando a comunidade acadêmica',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
@@ -139,17 +134,27 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: InputDecoration(
                       labelText: 'E-mail ou usuário',
                       labelStyle: TextStyle(color: Cores.textoSecundario),
-                      prefixIcon: Icon(Icons.person_outline, color: Cores.verde),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Cores.verde,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -167,7 +172,9 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: Icon(Icons.lock_outline, color: Cores.verde),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _ocultarSenha ? Icons.visibility_off : Icons.visibility,
+                          _ocultarSenha
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Cores.verde,
                         ),
                         onPressed: () {
@@ -178,14 +185,21 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -220,20 +234,20 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: _carregando
                         ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text(
-                      'ENTRAR',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            'ENTRAR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -247,7 +261,9 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegistroPage()),
+                            MaterialPageRoute(
+                              builder: (context) => const RegistroPage(),
+                            ),
                           );
                         },
                         child: Text(

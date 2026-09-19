@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../api/post_api.dart';
+import '../db/shared_prefs.dart';
+import '../widget/texto_estilizado.dart';
 import '/widget/build_select_image.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/post.dart';
-import '/db/post_dao.dart';
 
 class CriarPost extends StatefulWidget {
   const CriarPost({super.key});
@@ -15,17 +17,39 @@ class CriarPost extends StatefulWidget {
 class _CriarPostState extends State<CriarPost> {
   final _tituloC = TextEditingController();
   final _conteudoC = TextEditingController();
-  late String _urlImagem = '';
-  bool _salvo = false;
+  String _urlImagem = '';
+  bool _anexo = false;
+  bool _enviando = false;
 
-  @override
-  void dispose() {
-    _tituloC.dispose();
-    _conteudoC.dispose();
-    super.dispose();
+  void _aplicarFormatacao(String Function(String) f) {
+    final s = _conteudoC.selection;
+    if (!s.isValid || s.isCollapsed) return;
+    final texto = _conteudoC.text;
+    final novo = texto.replaceRange(
+      s.start,
+      s.end,
+      f(texto.substring(s.start, s.end)),
+    );
+    _conteudoC.value = TextEditingValue(
+      text: novo,
+      selection: TextSelection.collapsed(
+        offset: s.start + f(texto.substring(s.start, s.end)).length,
+      ),
+    );
   }
 
-  void _postar() async {
+  void _inserirMarcador(String marcador) {
+    final pos = _conteudoC.selection.start < 0
+        ? _conteudoC.text.length
+        : _conteudoC.selection.start;
+    final novo = _conteudoC.text.replaceRange(pos, pos, marcador);
+    _conteudoC.value = TextEditingValue(
+      text: novo,
+      selection: TextSelection.collapsed(offset: pos + marcador.length),
+    );
+  }
+
+  Future<void> _postar() async {
     final titulo = _tituloC.text.trim();
     if (titulo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -33,32 +57,80 @@ class _CriarPostState extends State<CriarPost> {
       );
       return;
     }
-    setState(() => _salvo = true);
-
-    final post = Post(
-      titulo: titulo,
-      autor: 'pdrolopes',
-      tempo: 'agora mesmo',
-      conteudo: _conteudoC.text.trim(),
-      urlImagem: _urlImagem,
+    setState(() => _enviando = true);
+    final autor = await SharedPrefs().getUsername() ?? 'anonimo';
+    await PostsApi().criarPost(
+      Post(
+        titulo: titulo,
+        autor: autor,
+        tempo: 'agora mesmo',
+        conteudo: _conteudoC.text.trim(),
+        urlImagem: _urlImagem,
+        anexo: _anexo,
+      ),
     );
-    await PostDao().inserirPost(post);
-    setState(() => _salvo = false);
+    if (mounted) Navigator.of(context).pop(true);
+  }
 
-    if (mounted) {
-      Navigator.of(context).pop(true); // se criou um post, true
-    }
+  Widget _buildFormatacao() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () => _aplicarFormatacao(TextoEstilizado.negrito),
+          icon: const Icon(Icons.format_bold),
+        ),
+        IconButton(
+          onPressed: () => _aplicarFormatacao(TextoEstilizado.italico),
+          icon: const Icon(Icons.format_italic),
+        ),
+        IconButton(
+          onPressed: () => _aplicarFormatacao(TextoEstilizado.sublinhado),
+          icon: const Icon(Icons.format_underline),
+        ),
+        IconButton(
+          onPressed: () => _aplicarFormatacao(TextoEstilizado.tachado),
+          icon: const Icon(Icons.strikethrough_s),
+        ),
+        IconButton(
+          onPressed: () => _inserirMarcador('\n• '),
+          icon: const Icon(Icons.format_list_bulleted),
+        ),
+        IconButton(
+          onPressed: () => _aplicarFormatacao((s) => '[$s](url)'),
+          icon: const Icon(Icons.link),
+        ),
+        IconButton(
+          onPressed: () => setState(() => _anexo = !_anexo),
+          icon: Icon(
+            Icons.attach_file,
+            color: _anexo ? Cores.verde : Colors.black54,
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.image_search),
+          onPressed: () async {
+            final url = await showDialog<String>(
+              context: context,
+              builder: (context) =>
+                  const SelecionarImagemDialog(categoria: 'campus'),
+            );
+            if (url != null) setState(() => _urlImagem = url);
+          },
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Cores.fundo,
-      resizeToAvoidBottomInset: true, // para aparecer o teclado
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
-          _salvo
+          _enviando
               ? const Padding(
                   padding: EdgeInsetsGeometry.only(right: 18),
                   child: SizedBox(
@@ -131,43 +203,5 @@ class _CriarPostState extends State<CriarPost> {
         ),
       ),
     );
-  }
-
-  Widget _buildFormatacao() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildIcones(Icons.format_bold),
-        _buildIcones(Icons.format_italic),
-        _buildIcones(Icons.format_underline),
-        _buildIcones(Icons.format_size),
-        _buildIcones(Icons.strikethrough_s),
-        _buildIcones(Icons.format_list_bulleted),
-        _buildIcones(Icons.link),
-        _buildIcones(Icons.attach_file),
-        _buildIcones(Icons.image),
-        IconButton(
-          icon: Icon(Icons.image_search),
-          onPressed: () async {
-            final urlEscolhida = await showDialog<String>(
-              context: context,
-              builder: (context) => SelecionarImagemDialog(categoria: 'travel'),
-            );
-
-            if (urlEscolhida != null) {
-              setState(() {
-                _urlImagem = urlEscolhida;
-              });
-            }
-          },
-        ),
-        _buildIcones(Icons.play_circle_filled),
-      ],
-    );
-  }
-
-  Widget _buildIcones(IconData icon) {
-    return Icon(icon, color: Colors.black);
   }
 }

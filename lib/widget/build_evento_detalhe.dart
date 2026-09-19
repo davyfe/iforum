@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/domain/evento.dart';
-import '/api/evento_api.dart';
+import '/db/shared_prefs.dart';
 import '/cores.dart';
 import 'build_text.dart';
 
@@ -15,35 +15,16 @@ class BuildEventoDetalhe extends StatefulWidget {
 }
 
 class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
-  late bool _inscrito;
-  bool _carregando = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _inscrito = widget.evento.inscrito;
-  }
+  late bool _inscrito = widget.evento.inscrito;
 
   Future<void> _alternarInscricao() async {
-    setState(() => _carregando = true);
-
-    final novoValor = !_inscrito;
-    final sucesso = await EventosApi().atualizarInscricao(
+    final ativo = await SharedPrefs().alternar(
+      'EVENTOS_INSCRITOS',
       widget.evento.id!,
-      novoValor,
     );
-
-    if (sucesso) {
-      widget.evento.inscrito = novoValor;
-      setState(() {
-        _inscrito = novoValor;
-        _carregando = false;
-      });
-      widget.onAlterado?.call();
-    } else {
-      setState(() => _carregando = false);
-      // opcional: mostrar um SnackBar avisando que falhou
-    }
+    widget.evento.inscrito = ativo;
+    setState(() => _inscrito = ativo);
+    widget.onAlterado?.call();
   }
 
   Future<void> _confirmarDesinscricao() async {
@@ -71,16 +52,12 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
         ],
       ),
     );
-
-    if (confirmou == true) {
-      await _alternarInscricao();
-    }
+    if (confirmou == true) await _alternarInscricao();
   }
 
   @override
   Widget build(BuildContext context) {
     final evento = widget.evento;
-
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -127,39 +104,25 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
               BuildText(evento.autor, color: Cores.textoTerciario),
             ],
           ),
-          const SizedBox(height: 20),
-          BuildText('Descrição em breve.', color: Cores.textoTerciario),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _carregando
-                  ? null
-                  : (_inscrito ? _confirmarDesinscricao : _alternarInscricao),
+              onPressed: _inscrito
+                  ? _confirmarDesinscricao
+                  : _alternarInscricao,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _inscrito ? Colors.white : widget.evento.cor,
+                backgroundColor: _inscrito ? Colors.white : evento.cor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(
-                  color: widget.evento.cor,
-                  width: _inscrito ? 1.5 : 0,
-                ),
+                side: BorderSide(color: evento.cor, width: _inscrito ? 1.5 : 0),
                 shape: const StadiumBorder(),
                 elevation: 0,
               ),
-              child: _carregando
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _inscrito ? widget.evento.cor : Colors.white,
-                      ),
-                    )
-                  : BuildText(
-                      _inscrito ? 'Desinscrever-se' : 'Inscrever-se',
-                      bold: true,
-                      color: _inscrito ? widget.evento.cor : Colors.white,
-                    ),
+              child: BuildText(
+                _inscrito ? 'Desinscrever-se' : 'Inscrever-se',
+                bold: true,
+                color: _inscrito ? evento.cor : Colors.white,
+              ),
             ),
           ),
         ],

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:iforum/widget/build_comentario.dart';
-import '../widget/build_text.dart';
+import 'package:iforum/widget/build_text.dart';
 import '/domain/noticia.dart';
-import '/cores.dart';
+import '/domain/comentario.dart';
+import '/db/comentario_dao.dart';
+import '/db/shared_prefs.dart';
 
 class NavPage extends StatefulWidget {
   final Noticia noticia;
@@ -14,6 +16,43 @@ class NavPage extends StatefulWidget {
 }
 
 class _NavPageState extends State<NavPage> {
+  final _comentarioController = TextEditingController();
+  late Future<List<Comentario>> _futureComentarios;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureComentarios = ComentarioDao().listarPorNoticia(
+      widget.noticia.titulo,
+    );
+  }
+
+  @override
+  void dispose() {
+    _comentarioController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _comentar() async {
+    final texto = _comentarioController.text.trim();
+    if (texto.isEmpty) return;
+    final autor = await SharedPrefs().getUsername() ?? 'anonimo';
+    await ComentarioDao().inserirComentario(
+      Comentario(
+        noticiaTitulo: widget.noticia.titulo,
+        autor: autor,
+        texto: texto,
+        tempo: 'agora mesmo',
+      ),
+    );
+    _comentarioController.clear();
+    setState(
+      () => _futureComentarios = ComentarioDao().listarPorNoticia(
+        widget.noticia.titulo,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +60,6 @@ class _NavPageState extends State<NavPage> {
         slivers: [
           SliverAppBar(
             iconTheme: const IconThemeData(color: Colors.white),
-            backgroundColor: Cores.verde,
             pinned: true,
             expandedHeight: 300.0,
             flexibleSpace: FlexibleSpaceBar(
@@ -31,8 +69,7 @@ class _NavPageState extends State<NavPage> {
                   Image.network(
                     widget.noticia.urlImagem,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
+                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
                   ),
                   const DecoratedBox(
                     decoration: BoxDecoration(
@@ -61,58 +98,14 @@ class _NavPageState extends State<NavPage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              "Por ${widget.noticia.autor}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(width: 3),
-                            const Icon(
-                              Icons.chevron_right,
-                              size: 15,
-                              color: Colors.white,
-                            ),
-                          ],
+                        Text(
+                          "Por ${widget.noticia.autor}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: SafeArea(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.search_outlined,
-                              color: Colors.white,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.share_outlined,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.flag_outlined,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -139,178 +132,54 @@ class _NavPageState extends State<NavPage> {
                     style: const TextStyle(fontSize: 16, color: Colors.black),
                   ),
                   const SizedBox(height: 30),
-                  Text("Comentários (5)"),
-                  _buildSessaoComentarios(),
+                  FutureBuilder<List<Comentario>>(
+                    future: _futureComentarios,
+                    builder: (context, snapshot) {
+                      final lista = snapshot.data ?? [];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          BuildText(
+                            'Comentários (${lista.length})',
+                            bold: true,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _comentarioController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Escreva um comentário...',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _comentar,
+                                icon: const Icon(Icons.send),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ...lista.map(
+                            (c) => BuildComentario(
+                              texto: c.texto,
+                              autor: c.autor,
+                              tempo: c.tempo,
+                              likes: c.likes,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  // COLOCAR WIDGET DEPOIS
-  Widget _buildSessaoComentarios() {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 10),
-          BuildComentario(
-              texto: 'Os comentários são todos iguais!! Estamos em uma matrix??!!',
-              autor: 'camilaas',
-              tempo: '2 minutos',
-              likes: 12,
-              reacao: "😱"),
-          SizedBox(height: 10),
-          const Divider(color: Colors.black54, thickness: 0.2, height: 1),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              CircleAvatar(radius: 12, backgroundColor: Cores.avatar),
-              SizedBox(width: 8),
-              Text(
-                "mauro.coelho",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text("7m"),
-              Spacer(),
-              Icon(Icons.more_horiz),
-            ],
-          ),
-          SizedBox(height: 5),
-          Text(
-            "Que besteira dessa camila...",
-            style: TextStyle(fontSize: 15),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 8),
-          buildInteracao(8, 2, "😤"),
-          SizedBox(height: 10),
-          const Divider(color: Colors.black54, thickness: 0.2, height: 1),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              CircleAvatar(radius: 12, backgroundColor: Cores.avatar),
-              SizedBox(width: 8),
-              Text(
-                "remus_lupim",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text("2m"),
-              Spacer(),
-              Icon(Icons.more_horiz),
-            ],
-          ),
-          SizedBox(height: 5),
-          Text(
-            "Pessoal... Vamos prestar atenção na matéria.",
-            style: TextStyle(fontSize: 15),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 8),
-          buildInteracao(12, 1, "🌕"),
-          SizedBox(height: 10),
-          const Divider(color: Colors.black54, thickness: 0.2, height: 1),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              CircleAvatar(radius: 12, backgroundColor: Cores.avatar),
-              SizedBox(width: 8),
-              Text(
-                "katniss.everdeen12",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text("30s"),
-              Spacer(),
-              Icon(Icons.more_horiz),
-            ],
-          ),
-          SizedBox(height: 5),
-          Text(
-            "Are you, are you coming to the tree?",
-            style: TextStyle(fontSize: 15),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 8),
-          buildInteracao(3, 0, "🥺"),
-          SizedBox(height: 10),
-        ],
-      ),
-    );
-  }
-
-  Widget buildInteracao(int likes, int comentarios, String reacao) {
-    return Row(
-      children: [
-        Chip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.thumb_up_alt_outlined,
-                size: 16,
-                color: Colors.black54,
-              ),
-              const SizedBox(width: 6),
-              Text('$likes |'),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.thumb_down_alt_outlined,
-                size: 16,
-                color: Colors.black54,
-              ),
-            ],
-          ),
-          labelPadding: const EdgeInsets.only(left: 4, right: 2),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(30)),
-          ),
-        ),
-        SizedBox(width: 10),
-        Chip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.chat_bubble_outline_rounded,
-                size: 16,
-                color: Colors.black54,
-              ),
-              const SizedBox(width: 6),
-              Text('$comentarios'),
-            ],
-          ),
-          labelPadding: const EdgeInsets.only(left: 4, right: 2),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(30)),
-          ),
-        ),
-        Spacer(),
-        Chip(
-          label: Text(
-            reacao,
-            style: TextStyle(fontSize: 16, color: Colors.black54),
-          ),
-          labelPadding: const EdgeInsets.only(left: 2, right: 2),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(30)),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,22 +1,29 @@
 import 'db_helper.dart';
 import '/domain/user.dart';
-import 'package:sqflite/sqflite.dart';
 
 class UserDao {
   Future<bool> login(String username, String password) async {
-    Database db = await DbHelper().initDB();
-    String sql = '''
-      SELECT *
-      FROM USER
-      WHERE username = ? AND password = ?;    
-    ''';
-
-    var result = await db.rawQuery(sql, [username, password]);
+    final db = await DbHelper().initDB();
+    final result = await db.query(
+      'USER',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
     return result.isNotEmpty;
   }
 
-  saveUser(User user) async {
-    Database db = await DbHelper().initDB();
-    db.insert('USER', user.toJson());
+  Future<bool> existe(String username) async {
+    final db = await DbHelper().initDB();
+    final result = await db.query(
+      'USER',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<int> cadastrar(User user) async {
+    final db = await DbHelper().initDB();
+    return db.insert('USER', user.toJson());
   }
 }

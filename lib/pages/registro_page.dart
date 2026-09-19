@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '/db/user_dao.dart';
 import '/cores.dart';
-import '/api/user_api.dart';
 import '/db/shared_prefs.dart';
 import '/domain/user.dart';
 import 'home_page.dart';
@@ -29,9 +29,9 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   void _mostrarErro(String mensagem) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensagem)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
   Future<void> _cadastrar() async {
@@ -43,12 +43,10 @@ class _RegistroPageState extends State<RegistroPage> {
       _mostrarErro('Preencha todos os campos.');
       return;
     }
-
     if (senha.length < 4) {
       _mostrarErro('A senha deve ter pelo menos 4 caracteres.');
       return;
     }
-
     if (senha != confirmarSenha) {
       _mostrarErro('As senhas não coincidem.');
       return;
@@ -56,34 +54,24 @@ class _RegistroPageState extends State<RegistroPage> {
 
     setState(() => _carregando = true);
 
-    try {
-      final jaExiste = await UserApi().usernameExiste(usuario);
-
-      if (jaExiste) {
-        if (!mounted) return;
-        _mostrarErro('Esse nome de usuário já está em uso.');
-        return;
-      }
-
-      await UserApi().registrar(User(usuario, senha));
-      await SharedPrefs().setUserStatus(true);
-
+    if (await UserDao().existe(usuario)) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Conta criada com sucesso!')),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Home()),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      _mostrarErro('Erro ao conectar. Tente novamente.');
-    } finally {
-      if (mounted) setState(() => _carregando = false);
+      setState(() => _carregando = false);
+      _mostrarErro('Esse nome de usuário já está em uso.');
+      return;
     }
+
+    await UserDao().cadastrar(User(usuario, senha));
+    await SharedPrefs().login(usuario);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Conta criada com sucesso!')));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const Home()),
+    );
   }
 
   @override
@@ -95,7 +83,12 @@ class _RegistroPageState extends State<RegistroPage> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 80, bottom: 40, left: 24, right: 24),
+              padding: const EdgeInsets.only(
+                top: 80,
+                bottom: 40,
+                left: 24,
+                right: 24,
+              ),
               decoration: BoxDecoration(
                 color: Cores.verde,
                 borderRadius: const BorderRadius.only(
@@ -133,7 +126,7 @@ class _RegistroPageState extends State<RegistroPage> {
                     'Conectando a comunidade acadêmica',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
@@ -159,17 +152,27 @@ class _RegistroPageState extends State<RegistroPage> {
                     decoration: InputDecoration(
                       labelText: 'Nome de usuário',
                       labelStyle: TextStyle(color: Cores.textoSecundario),
-                      prefixIcon: Icon(Icons.person_outline, color: Cores.verde),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Cores.verde,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -187,7 +190,9 @@ class _RegistroPageState extends State<RegistroPage> {
                       prefixIcon: Icon(Icons.lock_outline, color: Cores.verde),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _ocultarSenha ? Icons.visibility_off : Icons.visibility,
+                          _ocultarSenha
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Cores.verde,
                         ),
                         onPressed: () {
@@ -198,14 +203,21 @@ class _RegistroPageState extends State<RegistroPage> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -236,14 +248,21 @@ class _RegistroPageState extends State<RegistroPage> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -265,20 +284,20 @@ class _RegistroPageState extends State<RegistroPage> {
                     ),
                     child: _carregando
                         ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text(
-                      'CADASTRAR',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            'CADASTRAR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 24),
                   Row(

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import '/widget/build_text.dart';
 import '/widget/build_post.dart';
 import '/widget/build_search_bar.dart';
+import '/widget/build_estado.dart';
+import '/widget/build_filtro_dialog.dart';
 import 'notificacoes_page.dart';
-import '/db/post_dao.dart';
+import '/api/post_api.dart';
+import '/db/shared_prefs.dart';
 import '/domain/post.dart';
 import 'criar_page.dart';
-import '/cores.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
 
   @override
-  State<StatefulWidget> createState() => _ExploreState();
+  State<Explore> createState() => _ExploreState();
 }
 
 class _ExploreState extends State<Explore> {
@@ -25,7 +26,16 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
-    futureListaPosts = PostDao().listarPosts();
+    futureListaPosts = _carregar();
+  }
+
+  Future<List<Post>> _carregar() async {
+    final posts = await PostsApi().listarPosts();
+    final favoritos = await SharedPrefs().postsFavoritos();
+    for (var post in posts) {
+      post.favorito = favoritos.contains(post.id);
+    }
+    return posts;
   }
 
   @override
@@ -34,9 +44,7 @@ class _ExploreState extends State<Explore> {
     super.dispose();
   }
 
-  void recarregar() {
-    setState(() => futureListaPosts = PostDao().listarPosts());
-  }
+  void recarregar() => setState(() => futureListaPosts = _carregar());
 
   List<Post> _aplicarFiltros(List<Post> posts) {
     var lista = posts;
@@ -47,64 +55,37 @@ class _ExploreState extends State<Explore> {
           )
           .toList();
     }
-    if (filtrarFavoritos) {
-      lista = lista.where((e) => e.favorito).toList();
-    }
+    if (filtrarFavoritos) lista = lista.where((e) => e.favorito).toList();
     return lista;
-  }
-
-  void _abrirFiltro() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: BuildText('Filtrar posts', bold: true, size: 18),
-            content: CheckboxListTile(
-              value: filtrarFavoritos,
-              onChanged: (valor) =>
-                  setStateDialog(() => filtrarFavoritos = valor ?? false),
-              title: BuildText('Somente salvos'),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Cores.verde,
-              contentPadding: EdgeInsets.zero,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.of(context).pop();
-                },
-                child: BuildText('Aplicar', color: Cores.verde, bold: true),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const NotificacoesPage()),
-            ),
-            icon: const Icon(Icons.notifications),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
           ),
+          icon: const Icon(Icons.notifications),
         ),
         title: BuildSearchBar(
           controller: _pesquisaController,
           hint: 'Pesquisar posts...',
           onChanged: (valor) => setState(() => termoPesquisa = valor),
-          onFiltro: _abrirFiltro,
           filtroAtivo: filtrarFavoritos,
+          onFiltro: () async {
+            final valor = await mostrarFiltro<bool>(
+              context,
+              titulo: 'Filtrar posts',
+              opcoes: const [
+                OpcaoFiltro(false, 'Todos'),
+                OpcaoFiltro(true, 'Somente favoritos'),
+              ],
+              valorAtual: filtrarFavoritos,
+            );
+            if (valor != null) setState(() => filtrarFavoritos = valor);
+          },
         ),
         actions: [
           IconButton(
@@ -121,8 +102,6 @@ class _ExploreState extends State<Explore> {
             icon: const Icon(Icons.add),
           ),
         ],
-        backgroundColor: Cores.verde,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder(
         future: futureListaPosts,
@@ -131,17 +110,16 @@ class _ExploreState extends State<Explore> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: BuildText('Erro ao carregar posts', color: Colors.red),
+            return const BuildEstado(
+              icone: Icons.error_outline,
+              mensagem: 'Erro ao carregar posts',
             );
           }
           final lista = _aplicarFiltros(snapshot.data ?? []);
           if (lista.isEmpty) {
-            return Center(
-              child: BuildText(
-                'Nenhum post encontrado',
-                color: Cores.textoTerciario,
-              ),
+            return const BuildEstado(
+              icone: Icons.forum_outlined,
+              mensagem: 'Nenhum post encontrado',
             );
           }
           return ListView.builder(

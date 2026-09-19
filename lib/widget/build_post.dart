@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '/db/shared_prefs.dart';
 import '/domain/post.dart';
-import '/db/post_dao.dart';
 import '/cores.dart';
 import 'build_interaction.dart';
 import 'build_text.dart';
@@ -17,9 +17,11 @@ class BuildPost extends StatefulWidget {
 
 class _BuildPostState extends State<BuildPost> {
   Future<void> _alternarFavorito() async {
-    final novoValor = !widget.post.favorito;
-    await PostDao().atualizarFavorito(widget.post.id!, novoValor);
-    setState(() => widget.post.favorito = novoValor);
+    final ativo = await SharedPrefs().alternar(
+      'POSTS_FAVORITOS',
+      widget.post.id!,
+    );
+    setState(() => widget.post.favorito = ativo);
     widget.onAlterado?.call();
   }
 
@@ -30,7 +32,12 @@ class _BuildPostState extends State<BuildPost> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.only(top: 15, bottom: 10, left: 20, right: 20),
+            padding: const EdgeInsets.only(
+              top: 15,
+              bottom: 10,
+              left: 20,
+              right: 20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,20 +53,36 @@ class _BuildPostState extends State<BuildPost> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       visualDensity: VisualDensity.compact,
-                      onPressed: widget.post.id != null ? _alternarFavorito : null,
+                      onPressed: widget.post.id != null
+                          ? _alternarFavorito
+                          : null,
                       icon: Icon(
-                        widget.post.favorito ? Icons.bookmark : Icons.bookmark_border,
-                        color: widget.post.favorito ? Cores.verde : Colors.black54,
+                        widget.post.favorito
+                            ? Icons.bookmark
+                            : Icons.bookmark_border,
+                        color: widget.post.favorito
+                            ? Cores.verde
+                            : Colors.black54,
                         size: 20,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 5),
-                BuildText(widget.post.titulo, size: 20, bold: true, maxLines: 3, overflow: TextOverflow.ellipsis),
+                BuildText(
+                  widget.post.titulo,
+                  size: 20,
+                  bold: true,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 if (widget.post.conteudo.isNotEmpty) ...[
                   const SizedBox(height: 5),
-                  BuildText(widget.post.conteudo, maxLines: 3, overflow: TextOverflow.ellipsis),
+                  BuildText(
+                    widget.post.conteudo,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
                 if (widget.post.urlImagem.isNotEmpty) ...[
                   const SizedBox(height: 5),
@@ -69,7 +92,8 @@ class _BuildPostState extends State<BuildPost> {
                       widget.post.urlImagem,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
                     ),
                   ),
                 ],
@@ -78,7 +102,10 @@ class _BuildPostState extends State<BuildPost> {
                   _buildAnexo('livro.pdf', '250 mb'),
                 ],
                 const SizedBox(height: 8),
-                BuildInteractionBar(likes: widget.post.likes, comentarios: widget.post.comentarios),
+                BuildInteractionBar(
+                  likes: widget.post.likes,
+                  comentarios: widget.post.comentarios,
+                ),
               ],
             ),
           ),
@@ -100,7 +127,10 @@ class _BuildPostState extends State<BuildPost> {
         children: [
           const Icon(Icons.picture_as_pdf, color: Colors.red, size: 30),
           const SizedBox(width: 8),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [BuildText(nome, bold: true), BuildText(tamanho)]),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [BuildText(nome, bold: true), BuildText(tamanho)],
+          ),
           const SizedBox(width: 8),
           const Icon(Icons.file_download_outlined, size: 18),
         ],

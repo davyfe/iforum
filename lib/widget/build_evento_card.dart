@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import '/db/shared_prefs.dart';
 import '/widget/build_divider_pontilhado.dart';
 import '/widget/build_evento_detalhe.dart';
 import '/domain/evento.dart';
-import '/api/evento_api.dart';
 import '/cores.dart';
 import 'build_text.dart';
 
@@ -18,26 +18,12 @@ class BuildEventoCard extends StatefulWidget {
 
 class _BuildEventoCardState extends State<BuildEventoCard> {
   Future<void> _alternarFavorito() async {
-    final novoValor = !widget.evento.favorito;
-
-    // atualiza a UI na hora (otimista)
-    setState(() {
-      widget.evento.favorito = novoValor;
-    });
-    widget.onAlterado?.call();
-
-    // tenta persistir na API; se falhar, desfaz
-    final sucesso = await EventosApi().atualizarFavorito(
+    final ativo = await SharedPrefs().alternar(
+      'EVENTOS_FAVORITOS',
       widget.evento.id!,
-      novoValor,
     );
-
-    if (!sucesso) {
-      setState(() {
-        widget.evento.favorito = !novoValor;
-      });
-      widget.onAlterado?.call();
-    }
+    setState(() => widget.evento.favorito = ativo);
+    widget.onAlterado?.call();
   }
 
   void _abrirDetalhe() {

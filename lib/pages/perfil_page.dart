@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
+import '/api/post_api.dart';
+import '/db/shared_prefs.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
-
-import '/db/post_dao.dart';
 import '/domain/post.dart';
 import '/widget/build_post.dart';
-
-// nota: atualmente, no banco de dados de usuário
-// só tem username e senha, o resto coloco manualmente.
-// p/ depois: editar perfil e adocionar outros atributos no banco.
+import 'login_page.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({super.key});
@@ -17,14 +14,21 @@ class Perfil extends StatefulWidget {
   State<Perfil> createState() => _PerfilState();
 }
 
-class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
-  final usuario = 'pdrolopes';
-  late final Future<List<Post>> _postsFuture;
+class _PerfilState extends State<Perfil> {
+  String usuario = '';
+  Future<List<Post>>? _postsFuture;
 
   @override
   void initState() {
     super.initState();
-    _postsFuture = PostDao().listarPorAutor(usuario);
+    SharedPrefs().getUsername().then((nome) {
+      usuario = nome ?? 'convidado';
+      setState(
+        () => _postsFuture = PostsApi().listarPosts().then(
+          (posts) => posts.where((p) => p.autor == usuario).toList(),
+        ),
+      );
+    });
   }
 
   @override
@@ -46,7 +50,20 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
             right: 10,
             child: IconButton(
               onPressed: () {},
-              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              icon: IconButton(
+                onPressed: () async {
+                  await SharedPrefs().logout();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                      (r) => false,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.logout, color: Colors.white),
+              ),
             ),
           ),
         ],

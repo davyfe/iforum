@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../widget/build_estado.dart';
+import '/widget/build_filtro_dialog.dart';
 import '/api/biblioteca_api.dart';
 import '/domain/livro.dart';
 import '/widget/build_text.dart';
@@ -53,17 +55,8 @@ class _BibliotecaState extends State<Biblioteca> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundo,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText(
-          'Biblioteca',
-          bold: true,
-          color: Colors.white,
-          size: 20,
-        ),
-        centerTitle: true,
+        title: BuildText('Biblioteca', bold: true, size: 20),
         actions: [
           IconButton(
             tooltip: 'Meus empréstimos',
@@ -127,61 +120,23 @@ class _BibliotecaState extends State<Biblioteca> {
     );
   }
 
-  void _abrirFiltro() {
-    final opcoes = {
-      'geral': 'Geral',
-      'titulo': 'Título',
-      'autor': 'Autor',
-      'isbn': 'ISBN',
-    };
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            String valorSelecionado = tipoBusca;
-
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: BuildText('Filtrar busca', bold: true, size: 18),
-              content: RadioGroup<String>(
-                groupValue: valorSelecionado,
-                onChanged: (valor) {
-                  setStateDialog(() => valorSelecionado = valor ?? 'geral');
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: opcoes.entries.map((entry) {
-                    return RadioListTile<String>(
-                      value: entry.key,
-                      title: BuildText(entry.value),
-                      activeColor: Cores.verde,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      contentPadding: EdgeInsets.zero,
-                    );
-                  }).toList(),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    setState(() => tipoBusca = valorSelecionado);
-                    if (_buscaController.text.isNotEmpty) {
-                      _pesquisar(_buscaController.text);
-                    }
-                    Navigator.of(context).pop();
-                  },
-                  child: BuildText('Aplicar', color: Cores.verde, bold: true),
-                ),
-              ],
-            );
-          },
-        );
-      },
+  void _abrirFiltro() async {
+    const opcoes = [
+      OpcaoFiltro('geral', 'Geral'),
+      OpcaoFiltro('titulo', 'Título'),
+      OpcaoFiltro('autor', 'Autor'),
+      OpcaoFiltro('isbn', 'ISBN'),
+    ];
+    final valor = await mostrarFiltro<String>(
+      context,
+      titulo: 'Filtrar busca',
+      opcoes: opcoes,
+      valorAtual: tipoBusca,
     );
+    if (valor != null) {
+      setState(() => tipoBusca = valor);
+      if (_buscaController.text.isNotEmpty) _pesquisar(_buscaController.text);
+    }
   }
 
   Widget _buildPopulares() {
@@ -192,18 +147,9 @@ class _BibliotecaState extends State<Biblioteca> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-                const SizedBox(height: 8),
-                BuildText(
-                  'Erro ao carregar livros populares',
-                  color: Colors.red,
-                ),
-              ],
-            ),
+          BuildEstado(
+            icone: Icons.error_outline,
+            mensagem: 'Erro ao carregar livros populares.',
           );
         }
         return _buildGrid(snapshot.data ?? [], titulo: 'Populares');
@@ -219,17 +165,13 @@ class _BibliotecaState extends State<Biblioteca> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(
-            child: BuildText('Erro na pesquisa', color: Colors.red),
-          );
+          BuildEstado(icone: Icons.error_outline, mensagem: 'Erro na pesquisa');
         }
         final livros = snapshot.data ?? [];
         if (livros.isEmpty) {
-          return Center(
-            child: BuildText(
-              'Nenhum livro encontrado',
-              color: Cores.textoTerciario,
-            ),
+          BuildEstado(
+            icone: Icons.menu_book_outlined,
+            mensagem: 'Nenhum livro encontrado',
           );
         }
         return _buildGrid(livros, titulo: 'Resultados');

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
+import '/widget/build_estado.dart';
 import '/db/notificacao_dao.dart';
-import '/db/evento_dao.dart';
+import '/api/evento_api.dart';
+import '/api/emprestimo_api.dart';
+import '/db/shared_prefs.dart';
 import '/domain/notificacao.dart';
 import '/cores.dart';
 
@@ -22,30 +25,25 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
   }
 
   Future<List<Notificacao>> _carregar() async {
-    await _gerarNotificacoesDeEventos();
+    await _gerarNotificacoes();
     return NotificacaoDao().listarNotificacoes();
   }
 
-  // gera notificações para eventos inscritos que acontecem nos próximos 3 dias
-  Future<void> _gerarNotificacoesDeEventos() async {
-    final eventos = await EventoDao().listarEventos();
-    final existentes = await NotificacaoDao().listarNotificacoes();
+  Future<void> _gerarNotificacoes() async {
     final hoje = DateTime.now();
+    final existentes = await NotificacaoDao().listarNotificacoes();
 
-    for (var evento in eventos) {
-      if (!evento.inscrito) continue;
-
-      final dataEvento = _parseData(evento.data);
-      if (dataEvento == null) continue;
-
-      final diasRestantes = dataEvento.difference(hoje).inDays;
-      if (diasRestantes < 0 || diasRestantes > 3) continue;
-
-      final jaNotificado = existentes.any(
+    final inscritos = await SharedPrefs().eventosInscritos();
+    final eventos = await EventosApi().listarEventos();
+    for (var evento in eventos.where((e) => inscritos.contains(e.id))) {
+      final data = _parseData(evento.data);
+      if (data == null) continue;
+      final dias = data.difference(hoje).inDays;
+      if (dias < 0 || dias > 3) continue;
+      if (existentes.any(
         (n) => n.tipo == 'evento' && n.titulo.contains(evento.titulo),
-      );
-      if (jaNotificado) continue;
-
+      ))
+        continue;
       await NotificacaoDao().inserirNotificacao(
         Notificacao(
           titulo: 'Evento em breve: ${evento.titulo}',
@@ -56,24 +54,40 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
         ),
       );
     }
+
+    final emprestimos = await EmprestimoApi().listarAtuais();
+    for (var emprestimo in emprestimos) {
+      final prevista = _parseData(emprestimo.dataPrevista);
+      if (prevista == null) continue;
+      final dias = prevista.difference(hoje).inDays;
+      if (dias < 0 || dias > 2) continue;
+      if (existentes.any(
+        (n) =>
+            n.tipo == 'emprestimo' && n.titulo.contains(emprestimo.tituloLivro),
+      ))
+        continue;
+      await NotificacaoDao().inserirNotificacao(
+        Notificacao(
+          titulo: 'Devolução próxima: ${emprestimo.tituloLivro}',
+          mensagem: 'Prazo de devolução em ${emprestimo.dataPrevista}.',
+          tipo: 'emprestimo',
+          data: _formatarData(hoje),
+        ),
+      );
+    }
   }
 
   DateTime? _parseData(String data) {
     try {
-      final partes = data.split('/');
-      return DateTime(
-        int.parse(partes[2]),
-        int.parse(partes[1]),
-        int.parse(partes[0]),
-      );
+      final p = data.split('/');
+      return DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
     } catch (_) {
       return null;
     }
   }
 
-  String _formatarData(DateTime data) {
-    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
-  }
+  String _formatarData(DateTime data) =>
+      '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
 
   void recarregar() => setState(() => futureNotificacoes = _carregar());
 
@@ -93,15 +107,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     return Scaffold(
       backgroundColor: Cores.fundo,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText(
-          'Notificações',
-          bold: true,
-          color: Colors.white,
-          size: 20,
-        ),
-        centerTitle: true,
+        title: BuildText('Notificações', bold: true, size: 20),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
@@ -117,22 +123,9 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
           }
           final lista = snapshot.data ?? [];
           if (lista.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.notifications_none,
-                    size: 48,
-                    color: Cores.textoTerciario,
-                  ),
-                  const SizedBox(height: 8),
-                  BuildText(
-                    'Nenhuma notificação por aqui',
-                    color: Cores.textoTerciario,
-                  ),
-                ],
-              ),
+            return const BuildEstado(
+              icone: Icons.notifications_none,
+              mensagem: 'Nenhuma notificação por aqui',
             );
           }
           return ListView.separated(
@@ -154,11 +147,11 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                   decoration: BoxDecoration(
                     color: notificacao.lida
                         ? Colors.white
-                        : Cores.verde.withOpacity(0.08),
+                        : Cores.verde.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -170,7 +163,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Cores.verde.withOpacity(0.15),
+                          color: Cores.verde.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(

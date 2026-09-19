@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iforum/api/noticia_api.dart';
 import '/widget/build_noticia.dart';
 import '/widget/build_text.dart';
-import '/cores.dart';
-import 'package:iforum/api/noticia_api.dart';
 import '/domain/noticia.dart';
 import '/pages/noticias_ifal_page.dart';
 
@@ -33,10 +31,7 @@ class _NoticiasState extends State<Noticias> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText('Notícias', bold: true, color: Colors.white, size: 20),
-        centerTitle: true,
+        title: BuildText('Notícias', bold: true, size: 20),
         actions: [
           IconButton(
             icon: const Icon(Icons.language_outlined),

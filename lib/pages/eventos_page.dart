@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/widget/build_evento_card.dart';
+import '/widget/build_search_bar.dart';
+import '/widget/build_estado.dart';
+import '/widget/build_filtro_dialog.dart';
 import '/api/evento_api.dart';
+import '/db/shared_prefs.dart';
 import '/domain/evento.dart';
 import '/cores.dart';
 
@@ -9,7 +13,7 @@ class Eventos extends StatefulWidget {
   const Eventos({super.key});
 
   @override
-  State<StatefulWidget> createState() => _EventosState();
+  State<Eventos> createState() => _EventosState();
 }
 
 class _EventosState extends State<Eventos> {
@@ -23,7 +27,18 @@ class _EventosState extends State<Eventos> {
   @override
   void initState() {
     super.initState();
-    futureListaEventos = EventosApi().listarEventos();
+    futureListaEventos = _carregar();
+  }
+
+  Future<List<Evento>> _carregar() async {
+    final eventos = await EventosApi().listarEventos();
+    final favoritos = await SharedPrefs().eventosFavoritos();
+    final inscritos = await SharedPrefs().eventosInscritos();
+    for (var evento in eventos) {
+      evento.favorito = favoritos.contains(evento.id);
+      evento.inscrito = inscritos.contains(evento.id);
+    }
+    return eventos;
   }
 
   @override
@@ -32,21 +47,12 @@ class _EventosState extends State<Eventos> {
     super.dispose();
   }
 
-  void recarregar() {
-    setState(() {
-      futureListaEventos = EventosApi().listarEventos();
-    });
-  }
-
-  void _atualizarLista() {
-    setState(() {});
-  }
+  void recarregar() => setState(() => futureListaEventos = _carregar());
 
   List<Evento> _aplicarFiltros(List<Evento> eventos) {
     var lista = eventos
         .where((e) => aba == 'agenda' ? e.inscrito : !e.inscrito)
         .toList();
-
     if (termoPesquisa.isNotEmpty) {
       lista = lista
           .where(
@@ -54,47 +60,8 @@ class _EventosState extends State<Eventos> {
           )
           .toList();
     }
-
-    if (filtrarFavoritos) {
-      lista = lista.where((e) => e.favorito).toList();
-    }
-
+    if (filtrarFavoritos) lista = lista.where((e) => e.favorito).toList();
     return lista;
-  }
-
-  void _abrirFiltro() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: BuildText('Filtrar eventos', bold: true, size: 18),
-            content: CheckboxListTile(
-              value: filtrarFavoritos,
-              onChanged: (valor) {
-                setStateDialog(() => filtrarFavoritos = valor ?? false);
-              },
-              title: BuildText('Somente favoritos'),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Cores.verde,
-              contentPadding: EdgeInsets.zero,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.of(context).pop();
-                },
-                child: BuildText('Aplicar', color: Cores.verde, bold: true),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -102,10 +69,7 @@ class _EventosState extends State<Eventos> {
     return Scaffold(
       backgroundColor: Cores.fundo,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText('Eventos', bold: true, color: Colors.white, size: 20),
-        centerTitle: true,
+        title: BuildText('Eventos', bold: true, size: 20),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
@@ -116,44 +80,52 @@ class _EventosState extends State<Eventos> {
       body: Column(
         children: [
           _buildAbas(),
-          _buildBarraPesquisa(),
+          BuildSearchBar(
+            controller: _pesquisaController,
+            hint: 'Pesquisar eventos...',
+            onChanged: (valor) => setState(() => termoPesquisa = valor),
+            filtroAtivo: filtrarFavoritos,
+            onFiltro: () async {
+              final valor = await mostrarFiltro<bool>(
+                context,
+                titulo: 'Filtrar eventos',
+                opcoes: const [
+                  OpcaoFiltro(false, 'Todos'),
+                  OpcaoFiltro(true, 'Somente favoritos'),
+                ],
+                valorAtual: filtrarFavoritos,
+              );
+              if (valor != null) setState(() => filtrarFavoritos = valor);
+            },
+          ),
           Expanded(
             child: FutureBuilder(
               future: futureListaEventos,
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final lista = _aplicarFiltros(snapshot.requireData);
-                  if (lista.isEmpty) {
-                    return Center(
-                      child: BuildText(
-                        'Nenhum evento encontrado',
-                        color: Cores.textoTerciario,
-                      ),
-                    );
-                  }
-                  return buildListView(lista);
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.grey,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 8),
-                        BuildText(
-                          'Erro ao carregar eventos',
-                          color: Colors.red,
-                        ),
-                        BuildText(snapshot.error.toString(), color: Colors.red),
-                      ],
-                    ),
+                  return const BuildEstado(
+                    icone: Icons.error_outline,
+                    mensagem: 'Erro ao carregar eventos',
                   );
                 }
-                return const Center(child: CircularProgressIndicator());
+                final lista = _aplicarFiltros(snapshot.data ?? []);
+                if (lista.isEmpty) {
+                  return const BuildEstado(
+                    icone: Icons.event_busy_outlined,
+                    mensagem: 'Nenhum evento encontrado',
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 16),
+                  itemCount: lista.length,
+                  itemBuilder: (context, i) => BuildEventoCard(
+                    evento: lista[i],
+                    onAlterado: () => setState(() {}),
+                  ),
+                );
               },
             ),
           ),
@@ -163,8 +135,7 @@ class _EventosState extends State<Eventos> {
   }
 
   Widget _buildAbas() {
-    final abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
-
+    const abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.all(4),
@@ -197,49 +168,6 @@ class _EventosState extends State<Eventos> {
           );
         }).toList(),
       ),
-    );
-  }
-
-  Widget _buildBarraPesquisa() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _abrirFiltro,
-            icon: Icon(
-              Icons.filter_list,
-              color: filtrarFavoritos ? Cores.verde : Cores.textoTerciario,
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: _pesquisaController,
-              onChanged: (valor) => setState(() => termoPesquisa = valor),
-              decoration: InputDecoration(
-                hintText: 'Pesquisar eventos...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  ListView buildListView(List<Evento> listaEventos) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
-      itemCount: listaEventos.length,
-      itemBuilder: (context, i) =>
-          BuildEventoCard(evento: listaEventos[i], onAlterado: _atualizarLista),
     );
   }
 }

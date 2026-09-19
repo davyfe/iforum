@@ -3,7 +3,6 @@ import '/api/noticia_ifal_api.dart';
 import '/domain/noticia_ifal.dart';
 import '/widget/build_noticia_ifal.dart';
 import '/widget/build_text.dart';
-import '/cores.dart';
 
 class NoticiasIfal extends StatefulWidget {
   const NoticiasIfal({super.key});
@@ -31,12 +30,12 @@ class _NoticiasIfalState extends State<NoticiasIfal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText('Notícias Gerais do IFAL', bold: true, color: Colors.white, size: 20),
-        centerTitle: true,
+        title: BuildText('Noticias do Ifal', bold: true, size: 20),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: recarregar),
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined),
+            onPressed: recarregar,
+          ),
         ],
       ),
       body: FutureBuilder(
@@ -57,7 +56,10 @@ class _NoticiasIfalState extends State<NoticiasIfal> {
                 children: [
                   const Icon(Icons.error_outline, color: Colors.grey, size: 48),
                   const SizedBox(height: 8),
-                  BuildText('Erro ao carregar as notícias do IFAL', color: Colors.red),
+                  BuildText(
+                    'Erro ao carregar as notícias do IFAL',
+                    color: Colors.red,
+                  ),
                   BuildText(snapshot.error.toString(), color: Colors.red),
                 ],
               ),
