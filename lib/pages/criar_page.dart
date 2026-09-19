@@ -3,7 +3,7 @@ import '/widget/build_select_image.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/post.dart';
-import '/db/post_dao.dart';
+import '/api/post_api.dart'; // Ajustado para usar a API web se esse for o seu fluxo principal
 
 class CriarPost extends StatefulWidget {
   const CriarPost({super.key});
@@ -15,7 +15,7 @@ class CriarPost extends StatefulWidget {
 class _CriarPostState extends State<CriarPost> {
   final _tituloC = TextEditingController();
   final _conteudoC = TextEditingController();
-  late String _urlImagem = '';
+  String _urlImagem = '';
   bool _salvo = false;
 
   @override
@@ -35,18 +35,37 @@ class _CriarPostState extends State<CriarPost> {
     }
     setState(() => _salvo = true);
 
+    // Criando o objeto Post com todos os parâmetros necessários exigidos pelo modelo
     final post = Post(
       titulo: titulo,
       autor: 'pdrolopes',
       tempo: 'agora mesmo',
       conteudo: _conteudoC.text.trim(),
+      likes: 0,
+      comentarios: 0,
+      anexo: _urlImagem.isNotEmpty,
       urlImagem: _urlImagem,
     );
-    await PostDao().inserirPost(post);
-    setState(() => _salvo = false);
 
-    if (mounted) {
-      Navigator.of(context).pop(true); // se criou um post, true
+    try {
+      // Se estiver usando API web via Dio:
+      await PostsApi().inserirPost(post);
+
+      // Caso queira usar banco local SQLite em vez da API, descomente a linha abaixo:
+      // await PostDao().inserirPost(post);
+
+      setState(() => _salvo = false);
+
+      if (mounted) {
+        Navigator.of(context).pop(true); // Retorna true informando que criou com sucesso
+      }
+    } catch (e) {
+      setState(() => _salvo = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao criar post: $e')),
+        );
+      }
     }
   }
 
@@ -54,42 +73,42 @@ class _CriarPostState extends State<CriarPost> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Cores.fundo,
-      resizeToAvoidBottomInset: true, // para aparecer o teclado
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Cores.fundo,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
           _salvo
               ? const Padding(
-                  padding: EdgeInsetsGeometry.only(right: 18),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
+            padding: EdgeInsets.only(right: 18), // Corrigido de EdgeInsetsGeometry para EdgeInsets
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.black, // Alterado para preto para aparecer bem no fundo claro
+              ),
+            ),
+          )
               : Padding(
-                  padding: const EdgeInsets.only(right: 15),
-                  child: ElevatedButton(
-                    onPressed: _postar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Cores.verde,
-                      shape: const StadiumBorder(),
-                      elevation: 0,
-                      minimumSize: const Size(0, 30),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                    ),
-                    child: BuildText(
-                      'postar',
-                      color: Colors.white,
-                      size: 18,
-                      bold: true,
-                    ),
-                  ),
-                ),
+            padding: const EdgeInsets.only(right: 15),
+            child: ElevatedButton(
+              onPressed: _postar,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Cores.verde,
+                shape: const StadiumBorder(),
+                elevation: 0,
+                minimumSize: const Size(0, 30),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+              ),
+              child: BuildText(
+                'postar',
+                color: Colors.white,
+                size: 18,
+                bold: true,
+              ),
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -126,6 +145,28 @@ class _CriarPostState extends State<CriarPost> {
                 ),
                 style: const TextStyle(fontSize: 18, color: Colors.black),
               ),
+              const SizedBox(height: 20),
+              // Exibe indicador visual se houver imagem selecionada
+              if (_urlImagem.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.image, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Imagem anexada com sucesso',
+                          style: TextStyle(color: Colors.grey[700]),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () => setState(() => _urlImagem = ''),
+                      ),
+                    ],
+                  ),
+                ),
               _buildFormatacao(),
             ],
           ),
@@ -135,40 +176,44 @@ class _CriarPostState extends State<CriarPost> {
   }
 
   Widget _buildFormatacao() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildIcones(Icons.format_bold),
-        _buildIcones(Icons.format_italic),
-        _buildIcones(Icons.format_underline),
-        _buildIcones(Icons.format_size),
-        _buildIcones(Icons.strikethrough_s),
-        _buildIcones(Icons.format_list_bulleted),
-        _buildIcones(Icons.link),
-        _buildIcones(Icons.attach_file),
-        _buildIcones(Icons.image),
-        IconButton(
-          icon: Icon(Icons.image_search),
-          onPressed: () async {
-            final urlEscolhida = await showDialog<String>(
-              context: context,
-              builder: (context) => SelecionarImagemDialog(),
-            );
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildIcones(Icons.format_bold),
+          _buildIcones(Icons.format_italic),
+          _buildIcones(Icons.format_underline),
+          _buildIcones(Icons.format_size),
+          _buildIcones(Icons.strikethrough_s),
+          _buildIcones(Icons.format_list_bulleted),
+          _buildIcones(Icons.link),
+          _buildIcones(Icons.attach_file),
+          IconButton(
+            icon: const Icon(Icons.image, color: Colors.black),
+            onPressed: () async {
+              final urlEscolhida = await showDialog<String>(
+                context: context,
+                builder: (context) => const SelecionarImagemDialog(),
+              );
 
-            if (urlEscolhida != null) {
-              setState(() {
-                _urlImagem = urlEscolhida;
-              });
-            }
-          },
-        ),
-        _buildIcones(Icons.play_circle_filled),
-      ],
+              if (urlEscolhida != null) {
+                setState(() {
+                  _urlImagem = urlEscolhida;
+                });
+              }
+            },
+          ),
+          _buildIcones(Icons.play_circle_filled),
+        ],
+      ),
     );
   }
 
   Widget _buildIcones(IconData icon) {
-    return Icon(icon, color: Colors.black);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Icon(icon, color: Colors.black),
+    );
   }
 }
