@@ -5,15 +5,8 @@ import 'db_helper.dart';
 class PostDao {
   Future<List<Post>> listarPosts() async {
     Database db = await DbHelper().initDB();
-
-    var result = await db.rawQuery('SELECT * FROM POST');
-
-    List<Post> lista = [];
-    for (var json in result) {
-      Post post = Post.fromJson(json);
-      lista.add(post);
-    }
-    return lista;
+    final result = await db.query('POST', orderBy: 'id DESC');
+    return result.map((json) => Post.fromJson(json)).toList();
   }
 
   Future<int> inserirPost(Post post) async {
@@ -35,19 +28,17 @@ class PostDao {
     return db.delete('POST', where: 'id=?', whereArgs: [id]);
   }
 
-  // usado no posts tab na tela perfil
   Future<List<Post>> listarPorAutor(String autor) async {
     Database db = await DbHelper().initDB();
     final result = await db.query(
       'POST',
       where: 'autor = ?',
       whereArgs: [autor],
+      orderBy: 'id DESC',
     );
     return result.map((json) => Post.fromJson(json)).toList();
   }
 
-
-  // NOVO - usado na tela de pesquisa
   Future<List<Post>> buscarPorTitulo(String nomeInicial) async {
     Database db = await DbHelper().initDB();
     final result = await db.query(
@@ -57,5 +48,14 @@ class PostDao {
     );
     return result.map((json) => Post.fromJson(json)).toList();
   }
-}
 
+  Future<int> atualizarFavorito(int id, bool favorito) async {
+    Database db = await DbHelper().initDB();
+    return db.update(
+      'POST',
+      {'favorito': favorito ? 1 : 0},
+      where: 'id=?',
+      whereArgs: [id],
+    );
+  }
+}

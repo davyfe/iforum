@@ -5,17 +5,12 @@ import 'package:sqflite/sqflite.dart';
 class DbHelper {
   Future<Database> initDB() async {
     String path = await getDatabasesPath();
-    String dbName = 'iforum.db';
-
-    String dbPath = join(path, dbName);
-
-    Database db = await openDatabase(dbPath, version: 1, onCreate: onCreateDB);
-
-    return db;
+    String dbPath = join(path, 'iforum.db');
+    return openDatabase(dbPath, version: 1, onCreate: onCreateDB);
   }
 
   Future<void> onCreateDB(Database db, int version) async {
-    String sql = '''CREATE TABLE POST (
+    await db.execute('''CREATE TABLE POST (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       titulo TEXT NOT NULL,
       autor TEXT NOT NULL,
@@ -24,67 +19,44 @@ class DbHelper {
       likes INTEGER DEFAULT 0,
       comentarios INTEGER DEFAULT 0,
       anexo INTEGER DEFAULT 0,
-      urlImagem TEXT
-    ); ''';
-    await db.execute(sql);
+      urlImagem TEXT,
+      favorito INTEGER DEFAULT 0
+    );''');
 
-    sql =
-        "INSERT INTO POST (titulo, autor, tempo, conteudo, likes, comentarios) VALUES ('Estou fazendo uma reformulação do projeto! :P', 'davyf', '30 minutos', 'Recentemente fiz uma tela para apresentação de Programação Móvel, na terça-feira passada, funcionou bem, porém o design me incomodou um pouco. Por isso, agora estou a reformulando, melhorando aspectos tanto do design quando do código.', 26, 5);";
-    await db.execute(sql);
+    await db.insert('POST', {
+      'titulo': 'Estou fazendo uma reformulação do projeto! :P',
+      'autor': 'davyf',
+      'tempo': '30 minutos',
+      'conteudo':
+          'Recentemente fiz uma tela para apresentação de Programação Móvel, na terça-feira passada, funcionou bem, porém o design me incomodou um pouco. Por isso, agora estou a reformulando, melhorando aspectos tanto do design quando do código.',
+      'likes': 26,
+      'comentarios': 5,
+    });
+    await db.insert('POST', {
+      'titulo': 'Rio de Janeiro, RJ, Brasil.',
+      'autor': 'pdrolopes',
+      'tempo': '1 dia',
+      'likes': 504,
+      'comentarios': 230,
+      'urlImagem':
+          'https://www.daninoce.com.br/wp-content/uploads/2017/07/9-vistas-incriveis-no-rio-de-janeiro-danielle-noce-imagem-destaque.jpg',
+    });
+    await db.insert('POST', {
+      'titulo': 'Achei esse livro fantástico pra ajudar nos estudos!',
+      'autor': 'sabynna.louyse',
+      'tempo': '1 hora',
+      'likes': 60,
+      'comentarios': 3,
+      'anexo': 1,
+    });
+    await db.insert('POST', {
+      'titulo':
+          'Meu computador não está funcionando... Alguém sabe o que pode ser?',
+      'autor': 'duarte.geh',
+      'tempo': '2 segundos',
+    });
 
-    sql =
-        "INSERT INTO POST (titulo, autor, tempo, likes, comentarios, urlImagem) VALUES ('Rio de Janeiro, RJ, Brasil.', 'pdrolopes', '1 dia', 504, 230, 'https://www.daninoce.com.br/wp-content/uploads/2017/07/9-vistas-incriveis-no-rio-de-janeiro-danielle-noce-imagem-destaque.jpg');";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO POST (titulo, autor, tempo, likes, comentarios, anexo) VALUES ('Achei esse livro fantástico pra ajudar nos estudos!', 'sabynna.louyse', '1 hora', 60, 3, 1);";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO POST (titulo, autor, tempo) VALUES ('Meu computador não está funcionando... Alguém sabe o que pode ser?', 'duarte.geh', '2 segundos');";
-    await db.execute(sql);
-
-    sql = '''CREATE TABLE USER ( 
-      username TEXT PRIMARY KEY,
-      password TEXT
-    ); ''';
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO USER (username, password) VALUES ('pedrolopes', '123456');";
-    await db.execute(sql);
-
-    sql = '''CREATE TABLE NOTICIA (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      titulo TEXT NOT NULL,
-      texto TEXT NOT NULL,
-      autor TEXT NOT NULL,
-      data TEXT NOT NULL,
-      urlImagem TEXT
-    ); ''';
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Professor inova com novo método apresentado em sala.', 'O uso de ferramentas digitais e estratégias organizadas permite uma análise mais precisa dos hábitos de consumo, possibilitando identificar padrões, desperdícios e oportunidades de melhoria.', 'Alaryce Jaylle', '18/05/2026', 'https://img.freepik.com/fotos-gratis/professor-de-homem-usando-oculos-verificando-o-registro-de-classe-olhando-para-a-camera-intrigado-com-a-expressao-pensativa-pensando-sentado-na-mesa-da-escola-na-frente-do-quadro-negro-na-sala-aula_141793-131719.jpg')";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Ordem e Disciplina: Dolores Umbridge é nomeada a primeira Alta Inquisidora de Hogwarts.', 'O Ministério da Magia tomou uma medida sem precedentes nesta manhã para garantir o rigor e o padrão de excellence na Escola de Magia e Bruxaria de Hogwarts.', 'Rita Skeeter', '08/09/1995', 'https://observatoriodocinema.com.br/wp-content/uploads/2023/12/dolores-umbridge-harry-potter-scaled.jpg')";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Grêmio Estudantil divulga ação sobre a importância da participação ativa.', 'A ação promovida pelo Grêmio Estudantil teve como principal objetivo incentivar os alunos a participarem mais ativamente das decisões da escola.', 'José Paulo', '15/05/2026', 'https://observatorio.movimentopelabase.org.br/wp-content/uploads/2022/07/shutterstock-1937721487-970x570.jpg')";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('A percepção das dificuldades promove uma abordagem mais crítica e inclusiva na realidade educacional.', 'Os estudos mais recentes relacionados ao ambiente escolar demonstram que compreender as dificuldades enfrentadas pelos estudantes é fundamental para criar um ambiente mais inclusivo.', 'Adriana Santana', '16/05/2026', 'https://www.agricultura.sc.gov.br/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-04-at-16.51.49.jpeg')";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO NOTICIA (titulo, texto, autor, data, urlImagem) VALUES ('Panorama sobre o universo dos jogos destaca seu papel no aprendizado.', 'Pesquisadores e educadores vêm discutindo cada vez mais a presença dos jogos digitais como ferramenta pedagógica nas escolas.', 'Karinne Coelho', '15/05/2026', 'https://cdn.focoradical.com.br/newfoco/banners/20251217173547IMG9373.jpg')";
-    await db.execute(sql);
-
-    sql = '''CREATE TABLE EVENTO (
+    await db.execute('''CREATE TABLE EVENTO (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       titulo TEXT NOT NULL,
       data TEXT NOT NULL,
@@ -94,26 +66,42 @@ class DbHelper {
       cor INTEGER NOT NULL,
       inscrito INTEGER DEFAULT 0,
       favorito INTEGER DEFAULT 0
-    ); ''';
-    await db.execute(sql);
+    );''');
 
-    sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03/2026', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', ${Colors.lightBlueAccent.toARGB32()})";
-    await db.execute(sql);
+    await db.insert('EVENTO', {
+      'titulo': 'IV Semana Nacional de Ciência e Tecnologia',
+      'data': '30/03/2026',
+      'horario': '8:30',
+      'local': 'Ifal Campus Arapiraca',
+      'autor': 'Adriana Santana',
+      'cor': Colors.lightBlueAccent.toARGB32(),
+    });
+    await db.insert('EVENTO', {
+      'titulo': 'Semana do Meio Ambiente 2026',
+      'data': '10/06/2026',
+      'horario': '9:30',
+      'local': 'Ifal Campus Arapiraca',
+      'autor': 'Comissão de Meio Ambiente',
+      'cor': Colors.lightGreen.toARGB32(),
+    });
+    await db.insert('EVENTO', {
+      'titulo': 'Abril Índigena',
+      'data': '16/04/2026',
+      'horario': '9:30',
+      'local': 'Ifal Campus Arapiraca',
+      'autor': 'Sante',
+      'cor': Colors.redAccent.toARGB32(),
+    });
+    await db.insert('EVENTO', {
+      'titulo': 'V Festival de Arte',
+      'data': '04/12/2026',
+      'horario': '8:00',
+      'local': 'Ifal Campus Penedo',
+      'autor': 'Comissão de Arte',
+      'cor': Colors.yellow.toARGB32(),
+    });
 
-    sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06/2026', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', ${Colors.lightGreen.toARGB32()})";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Abril Índigena', '16/04/2026', '9:30', 'Ifal Campus Arapiraca', 'Sante', ${Colors.redAccent.toARGB32()})";
-    await db.execute(sql);
-
-    sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('V Festival de Arte', '04/12/2024', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', ${Colors.yellow.toARGB32()})";
-    await db.execute(sql);
-
-    sql = '''CREATE TABLE EMPRESTIMO (
+    await db.execute('''CREATE TABLE EMPRESTIMO (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tituloLivro TEXT NOT NULL,
       autorLivro TEXT,
@@ -123,17 +111,24 @@ class DbHelper {
       dataPrevista TEXT NOT NULL,
       dataDevolucao TEXT,
       renovacoes INTEGER DEFAULT 0
-    ); ''';
-    await db.execute(sql);
+    );''');
 
-    sql = '''CREATE TABLE NOTIFICACAO (
+    await db.execute('''CREATE TABLE NOTIFICACAO (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       titulo TEXT NOT NULL,
       mensagem TEXT NOT NULL,
       tipo TEXT NOT NULL,
       data TEXT NOT NULL,
       lida INTEGER DEFAULT 0
-    ); ''';
-    await db.execute(sql);
+    );''');
+
+    await db.execute('''CREATE TABLE COMENTARIO (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      noticiaTitulo TEXT NOT NULL,
+      autor TEXT NOT NULL,
+      texto TEXT NOT NULL,
+      tempo TEXT NOT NULL,
+      likes INTEGER DEFAULT 0
+    );''');
   }
 }
