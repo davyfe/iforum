@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../cores.dart';
 import '/widget/build_post.dart';
 import '/widget/build_search_bar.dart';
 import '/widget/build_estado.dart';
@@ -52,7 +53,7 @@ class _ExploreState extends State<Explore> {
       lista = lista
           .where(
             (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
-          )
+      )
           .toList();
     }
     if (filtrarFavoritos) lista = lista.where((e) => e.favorito).toList();
@@ -64,10 +65,12 @@ class _ExploreState extends State<Explore> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
-          ),
-          icon: const Icon(Icons.notifications),
+          onPressed: () =>
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const NotificacoesPage()),
+              ),
+          icon: Icon(Icons.notifications, color: Cores.verde),
         ),
         title: BuildSearchBar(
           controller: _pesquisaController,
@@ -87,19 +90,20 @@ class _ExploreState extends State<Explore> {
             if (valor != null) setState(() => filtrarFavoritos = valor);
           },
         ),
+        backgroundColor: Cores.fundo,
         actions: [
           IconButton(
             onPressed: () async {
               final criou = await Navigator.of(context, rootNavigator: true)
                   .push<bool>(
-                    MaterialPageRoute(
-                      builder: (context) => const CriarPost(),
-                      fullscreenDialog: true,
-                    ),
-                  );
+                MaterialPageRoute(
+                  builder: (context) => const CriarPost(),
+                  fullscreenDialog: true,
+                ),
+              );
               if (criou == true) recarregar();
             },
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add, color: Cores.verde),
           ),
         ],
       ),
