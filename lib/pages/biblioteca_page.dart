@@ -31,22 +31,21 @@ class _BibliotecaState extends State<Biblioteca> {
     super.dispose();
   }
 
+  Future<List<Livro>> _buscarPorIsbn(String isbn) async {
+    final livro = await BibliotecaApi().buscarPorIsbn(isbn);
+    return livro != null ? [livro] : [];
+  }
+
   void _pesquisar(String termo) {
-    if (termo.trim().isEmpty) {
+    final texto = termo.trim();
+    if (texto.isEmpty) {
       setState(() => futureBusca = null);
       return;
     }
     setState(() {
-      if (tipoBusca == 'isbn') {
-        futureBusca = BibliotecaApi()
-            .buscarPorIsbn(termo.trim())
-            .then((livro) => livro != null ? [livro] : <Livro>[]);
-      } else {
-        futureBusca = BibliotecaApi().pesquisarLivros(
-          termo.trim(),
-          tipo: tipoBusca,
-        );
-      }
+      futureBusca = tipoBusca == 'isbn'
+          ? _buscarPorIsbn(texto)
+          : BibliotecaApi().pesquisarLivros(texto, tipo: tipoBusca);
     });
   }
 

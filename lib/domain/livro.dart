@@ -15,51 +15,30 @@ class Livro {
     this.chave = '',
   });
 
-  factory Livro.fromJsonBusca(Map<String, dynamic> json) {
+  Livro.fromJson(Map<String, dynamic> json) {
+    // a api retorna como lista:
     final autores = json['author_name'] as List?;
     final isbns = json['isbn'] as List?;
     final coverId = json['cover_i'];
-
-    return Livro(
-      titulo: json['title'] ?? 'Sem título',
-      autor: (autores != null && autores.isNotEmpty)
-          ? autores.first
-          : 'Autor desconhecido',
-      ano: json['first_publish_year']?.toString() ?? '',
-      isbn: (isbns != null && isbns.isNotEmpty) ? isbns.first : '',
-      capaUrl: coverId != null
-          ? 'https://covers.openlibrary.org/b/id/$coverId-M.jpg'
-          : '',
-      chave: json['key'] ?? '',
-    );
+    titulo = json['title'] ?? 'Sem título';
+    // primeiro nome
+    autor = (autores != null && autores.isNotEmpty)
+        ? autores.first
+        : 'Autor desconhecido';
+    ano = json['first_publish_year']?.toString() ?? '';
+    isbn = (isbns != null && isbns.isNotEmpty) ? isbns.first : '';
+    capaUrl = coverId != null
+        ? 'https://covers.openlibrary.org/b/id/$coverId-M.jpg'
+        : '';
+    chave = json['key'] ?? '';
   }
 
-  factory Livro.fromJsonTrending(Map<String, dynamic> json) {
-    final autores = json['author_name'] as List?;
-    final coverId = json['cover_i'];
-
-    return Livro(
-      titulo: json['title'] ?? 'Sem título',
-      autor: (autores != null && autores.isNotEmpty)
-          ? autores.first
-          : 'Autor desconhecido',
-      ano: json['first_publish_year']?.toString() ?? '',
-      // a api de trending não retorna isbn; o empréstimo fica indisponível
-      // até o usuário achar o mesmo livro pela pesquisa por título/autor
-      capaUrl: coverId != null
-          ? 'https://covers.openlibrary.org/b/id/$coverId-M.jpg'
-          : '',
-      chave: json['key'] ?? '',
-    );
-  }
-
-  factory Livro.fromJsonIsbn(Map<String, dynamic> json, String isbnBuscado) {
-    return Livro(
-      titulo: json['title'] ?? 'Sem título',
-      ano: json['publish_date'] ?? '',
-      isbn: isbnBuscado,
-      capaUrl: 'https://covers.openlibrary.org/b/isbn/$isbnBuscado-M.jpg',
-      chave: json['key'] ?? '',
-    );
+  Livro.fromJsonIsbn(Map<String, dynamic> json, String isbn) {
+    titulo = json['title'] ?? 'Sem título';
+    autor = 'Autor desconhecido';
+    ano = json['publish_date'] ?? '';
+    isbn = isbn;
+    capaUrl = 'https://covers.openlibrary.org/b/isbn/$isbn-M.jpg';
+    chave = json['key'] ?? '';
   }
 }

@@ -76,8 +76,6 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
 
   @override
   Widget build(BuildContext context) {
-    final semIsbn = widget.livro.isbn.isEmpty;
-
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -142,9 +140,7 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: (_carregando || _jaEmprestado || semIsbn)
-                  ? null
-                  : _emprestar,
+              onPressed: (_carregando || _jaEmprestado) ? null : _emprestar,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Cores.verde,
                 foregroundColor: Colors.white,
@@ -163,11 +159,7 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
                       ),
                     )
                   : Text(
-                      semIsbn
-                          ? 'ISBN indisponível'
-                          : (_jaEmprestado
-                                ? 'Já emprestado'
-                                : 'Emprestar (14 dias)'),
+                      _jaEmprestado ? 'Já emprestado' : 'Emprestar (14 dias)',
                     ),
             ),
           ),

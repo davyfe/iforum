@@ -43,22 +43,17 @@ class _EventosState extends State<Eventos> {
   }
 
   List<Evento> _aplicarFiltros(List<Evento> eventos) {
-    var lista = eventos
-        .where((e) => aba == 'agenda' ? e.inscrito : !e.inscrito)
-        .toList();
-
-    if (termoPesquisa.isNotEmpty) {
-      lista = lista
-          .where(
-            (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
-          )
-          .toList();
+    List<Evento> lista = [];
+    for (var e in eventos) {
+      if (aba == 'agenda' && !e.inscrito) continue;
+      if (aba != 'agenda' && e.inscrito) continue;
+      if (termoPesquisa.isNotEmpty &&
+          !e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase())) {
+        continue;
+      }
+      if (filtrarFavoritos && !e.favorito) continue;
+      lista.add(e);
     }
-
-    if (filtrarFavoritos) {
-      lista = lista.where((e) => e.favorito).toList();
-    }
-
     return lista;
   }
 
