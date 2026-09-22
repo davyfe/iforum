@@ -26,7 +26,6 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
     });
     widget.onAlterado?.call();
 
-    // tenta persistir na API; se falhar, desfaz
     final sucesso = await EventosApi().atualizarFavorito(
       widget.evento.id!,
       novoValor,
@@ -166,8 +165,8 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            visualDensity:
-                                VisualDensity.compact, // reforça, opcional
+                            visualDensity: VisualDensity.compact,
+                            // reforça, opcional
                             splashRadius: 14,
                             onPressed: evento.id != null
                                 ? _alternarFavorito

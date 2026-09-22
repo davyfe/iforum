@@ -27,7 +27,7 @@ class _BuildLivroDetalheState extends State<BuildLivroDetalhe> {
   }
 
   Future<void> _verificarEmprestimo() async {
-    final emprestado = await EmprestimoApi().estaEmprestado(widget.livro.isbn);
+    final emprestado = await EmprestimoApi().verificar(widget.livro.isbn);
     if (mounted) setState(() => _jaEmprestado = emprestado);
   }
 

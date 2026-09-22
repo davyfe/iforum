@@ -24,6 +24,12 @@ class _EmprestimosPageState extends State<EmprestimosPage>
     _carregar();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   void _carregar() {
     futureAtuais = EmprestimoApi().listarAtuais();
     futureAntigos = EmprestimoApi().listarAntigos();
@@ -31,45 +37,28 @@ class _EmprestimosPageState extends State<EmprestimosPage>
 
   void recarregar() => setState(_carregar);
 
-  String _formatarData(DateTime data) {
-    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
+  String _formatarData(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+  DateTime _parseData(String d) {
+    final p = d.split('/');
+    return DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
   }
 
-  DateTime _parseData(String data) {
-    final partes = data.split('/');
-    return DateTime(
-      int.parse(partes[2]),
-      int.parse(partes[1]),
-      int.parse(partes[0]),
-    );
-  }
-
-  Future<void> _devolver(Emprestimo emprestimo) async {
-    await EmprestimoApi().devolver(
-      emprestimo.id!,
-      _formatarData(DateTime.now()),
-    );
+  Future<void> _devolver(Emprestimo e) async {
+    await EmprestimoApi().devolver(e.id!, _formatarData(DateTime.now()));
     recarregar();
   }
 
-  Future<void> _renovar(Emprestimo emprestimo) async {
-    if (emprestimo.renovacoes >= 3) return;
-
-    final novaPrevisao = _parseData(
-      emprestimo.dataPrevista,
-    ).add(const Duration(days: 14));
+  Future<void> _renovar(Emprestimo e) async {
+    if (e.renovacoes >= 3) return;
+    final novaData = _parseData(e.dataPrevista).add(const Duration(days: 14));
     await EmprestimoApi().renovar(
-      emprestimo.id!,
-      _formatarData(novaPrevisao),
-      emprestimo.renovacoes + 1,
+      e.id!,
+      _formatarData(novaData),
+      e.renovacoes + 1,
     );
     recarregar();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Renovado até ${_formatarData(novaPrevisao)}.')),
-      );
-    }
   }
 
   @override
@@ -110,10 +99,10 @@ class _EmprestimosPageState extends State<EmprestimosPage>
     return FutureBuilder<List<Emprestimo>>(
       future: future,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final lista = snapshot.data ?? [];
+        final lista = snapshot.data!;
         if (lista.isEmpty) {
           return Center(
             child: BuildText(
@@ -133,120 +122,61 @@ class _EmprestimosPageState extends State<EmprestimosPage>
     );
   }
 
-  Widget _buildCard(Emprestimo emprestimo, {required bool atual}) {
+  Widget _buildCard(Emprestimo e, {required bool atual}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 55,
-              height: 78,
-              child: emprestimo.capaUrl.isNotEmpty
-                  ? Image.network(
-                      emprestimo.capaUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.menu_book),
-                    )
-                  : const Icon(Icons.menu_book),
-            ),
+          BuildText(e.tituloLivro, bold: true),
+          BuildText(e.autorLivro, size: 13, color: Cores.textoTerciario),
+          const SizedBox(height: 6),
+          BuildText(
+            'Emprestado em ${e.dataEmprestimo}',
+            size: 12,
+            color: Cores.textoTerciario,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BuildText(
-                  emprestimo.tituloLivro,
-                  bold: true,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                BuildText(
-                  emprestimo.autorLivro,
-                  size: 13,
-                  color: Cores.textoTerciario,
-                ),
-                const SizedBox(height: 6),
-                BuildText(
-                  'Emprestado em ${emprestimo.dataEmprestimo}',
+          atual
+              ? BuildText(
+                  'Devolução até ${e.dataPrevista}',
+                  size: 12,
+                  color: Colors.redAccent,
+                )
+              : BuildText(
+                  'Devolvido em ${e.dataDevolucao}',
                   size: 12,
                   color: Cores.textoTerciario,
                 ),
-                if (atual)
-                  BuildText(
-                    'Devolução até ${emprestimo.dataPrevista}',
-                    size: 12,
-                    color: Colors.redAccent,
-                  )
-                else
-                  BuildText(
-                    'Devolvido em ${emprestimo.dataDevolucao}',
-                    size: 12,
-                    color: Cores.textoTerciario,
+          if (atual) ...[
+            BuildText(
+              'Renovações: ${e.renovacoes}/3',
+              size: 12,
+              color: Cores.textoTerciario,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: e.renovacoes >= 3 ? null : () => _renovar(e),
+                    child: const Text('Renovar'),
                   ),
-                if (atual) ...[
-                  const SizedBox(height: 4),
-                  BuildText(
-                    'Renovações: ${emprestimo.renovacoes}/3',
-                    size: 12,
-                    color: Cores.textoTerciario,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _devolver(e),
+                    child: const Text('Devolver'),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: emprestimo.renovacoes >= 3
-                              ? null
-                              : () => _renovar(emprestimo),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Cores.verde),
-                            shape: const StadiumBorder(),
-                          ),
-                          child: BuildText(
-                            'Renovar',
-                            color: Cores.verde,
-                            size: 13,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _devolver(emprestimo),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Cores.verde,
-                            foregroundColor: Colors.white,
-                            shape: const StadiumBorder(),
-                          ),
-                          child: const Text(
-                            'Devolver',
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ],
             ),
-          ),
+          ],
         ],
       ),
     );

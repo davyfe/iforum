@@ -32,7 +32,7 @@ class Evento {
     local = json['local'] ?? '';
     autor = json['autor'] ?? '';
     cor = json['cor'] != null ? Color(json['cor']) : Cores.verde;
-    inscrito = json['inscrito'] == 1 || json['inscrito'] == true;
-    favorito = json['favorito'] == 1 || json['favorito'] == true;
+    inscrito = json['inscrito'] == true || json['inscrito'] == 1;
+    favorito = json['favorito'] == true || json['favorito'] == 1;
   }
 }

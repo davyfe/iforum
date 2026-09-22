@@ -13,7 +13,7 @@ class Eventos extends StatefulWidget {
 }
 
 class _EventosState extends State<Eventos> {
-  late Future<List<Evento>> futureListaEventos;
+  late Future<List<Evento>> futureEventos;
   final _pesquisaController = TextEditingController();
 
   String aba = 'programacao';
@@ -23,7 +23,7 @@ class _EventosState extends State<Eventos> {
   @override
   void initState() {
     super.initState();
-    futureListaEventos = EventosApi().listarEventos();
+    futureEventos = EventosApi().listarEventos();
   }
 
   @override
@@ -34,15 +34,11 @@ class _EventosState extends State<Eventos> {
 
   void recarregar() {
     setState(() {
-      futureListaEventos = EventosApi().listarEventos();
+      futureEventos = EventosApi().listarEventos();
     });
   }
 
-  void _atualizarLista() {
-    setState(() {});
-  }
-
-  List<Evento> _aplicarFiltros(List<Evento> eventos) {
+  List<Evento> _filtrar(List<Evento> eventos) {
     List<Evento> lista = [];
     for (var e in eventos) {
       if (aba == 'agenda' && !e.inscrito) continue;
@@ -60,35 +56,27 @@ class _EventosState extends State<Eventos> {
   void _abrirFiltro() {
     showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: BuildText('Filtrar eventos', bold: true, size: 18),
-            content: CheckboxListTile(
-              value: filtrarFavoritos,
-              onChanged: (valor) {
-                setStateDialog(() => filtrarFavoritos = valor ?? false);
-              },
-              title: BuildText('Somente favoritos'),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Cores.verde,
-              contentPadding: EdgeInsets.zero,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.of(context).pop();
-                },
-                child: BuildText('Aplicar', color: Cores.verde, bold: true),
-              ),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: BuildText('Filtrar eventos', bold: true, size: 18),
+          content: CheckboxListTile(
+            value: filtrarFavoritos,
+            onChanged: (v) =>
+                setStateDialog(() => filtrarFavoritos = v ?? false),
+            title: BuildText('Somente favoritos'),
+            controlAffinity: ListTileControlAffinity.leading,
           ),
-        );
-      },
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+              child: BuildText('Aplicar', color: Cores.verde, bold: true),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -113,42 +101,37 @@ class _EventosState extends State<Eventos> {
           _buildAbas(),
           _buildBarraPesquisa(),
           Expanded(
-            child: FutureBuilder(
-              future: futureListaEventos,
+            child: FutureBuilder<List<Evento>>(
+              future: futureEventos,
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final lista = _aplicarFiltros(snapshot.requireData);
-                  if (lista.isEmpty) {
-                    return Center(
-                      child: BuildText(
-                        'Nenhum evento encontrado',
-                        color: Cores.textoTerciario,
-                      ),
-                    );
-                  }
-                  return buildListView(lista);
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
                   return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.grey,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 8),
-                        BuildText(
-                          'Erro ao carregar eventos',
-                          color: Colors.red,
-                        ),
-                        BuildText(snapshot.error.toString(), color: Colors.red),
-                      ],
+                    child: BuildText(
+                      'Erro ao carregar eventos',
+                      color: Colors.red,
                     ),
                   );
                 }
-                return const Center(child: CircularProgressIndicator());
+                final lista = _filtrar(snapshot.data!);
+                if (lista.isEmpty) {
+                  return Center(
+                    child: BuildText(
+                      'Nenhum evento encontrado',
+                      color: Cores.textoTerciario,
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 16),
+                  itemCount: lista.length,
+                  itemBuilder: (context, i) => BuildEventoCard(
+                    evento: lista[i],
+                    onAlterado: () => setState(() {}),
+                  ),
+                );
               },
             ),
           ),
@@ -157,9 +140,8 @@ class _EventosState extends State<Eventos> {
     );
   }
 
-  Widget _buildAbas() {
-    final abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
-
+  Container _buildAbas() {
+    const abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.all(4),
@@ -226,15 +208,6 @@ class _EventosState extends State<Eventos> {
           ),
         ],
       ),
-    );
-  }
-
-  ListView buildListView(List<Evento> listaEventos) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
-      itemCount: listaEventos.length,
-      itemBuilder: (context, i) =>
-          BuildEventoCard(evento: listaEventos[i], onAlterado: _atualizarLista),
     );
   }
 }

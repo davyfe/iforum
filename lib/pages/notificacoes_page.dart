@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/db/notificacao_dao.dart';
-import '/db/evento_dao.dart';
+import '/api/evento_api.dart';
 import '/domain/notificacao.dart';
 import '/cores.dart';
 
@@ -26,25 +26,26 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     return NotificacaoDao().listarNotificacoes();
   }
 
-  // gera notificações para eventos inscritos que acontecem nos próximos 3 dias
   Future<void> _gerarNotificacoesDeEventos() async {
-    final eventos = await EventoDao().listarEventos();
+    final eventos = await EventosApi().listarEventos();
     final existentes = await NotificacaoDao().listarNotificacoes();
     final hoje = DateTime.now();
 
     for (var evento in eventos) {
       if (!evento.inscrito) continue;
 
-      final dataEvento = _parseData(evento.data);
-      if (dataEvento == null) continue;
-
-      final diasRestantes = dataEvento.difference(hoje).inDays;
-      if (diasRestantes < 0 || diasRestantes > 3) continue;
-
-      final jaNotificado = existentes.any(
+      final p = evento.data.split('/');
+      if (p.length != 3) continue;
+      final dias = DateTime(
+        int.parse(p[2]),
+        int.parse(p[1]),
+        int.parse(p[0]),
+      ).difference(hoje).inDays;
+      if (dias < 0 || dias > 3) continue;
+      if (existentes.any(
         (n) => n.tipo == 'evento' && n.titulo.contains(evento.titulo),
-      );
-      if (jaNotificado) continue;
+      ))
+        continue;
 
       await NotificacaoDao().inserirNotificacao(
         Notificacao(
@@ -52,32 +53,22 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
           mensagem:
               'Acontece em ${evento.data} às ${evento.horario}, em ${evento.local}.',
           tipo: 'evento',
-          data: _formatarData(hoje),
+          data:
+              '${hoje.day.toString().padLeft(2, '0')}/${hoje.month.toString().padLeft(2, '0')}/${hoje.year}',
         ),
       );
     }
   }
 
-  DateTime? _parseData(String data) {
-    try {
-      final partes = data.split('/');
-      return DateTime(
-        int.parse(partes[2]),
-        int.parse(partes[1]),
-        int.parse(partes[0]),
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String _formatarData(DateTime data) {
-    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
-  }
-
   void recarregar() => setState(() => futureNotificacoes = _carregar());
 
-  IconData _iconePorTipo(String tipo) {
+  Future<void> _marcarComoLida(Notificacao n) async {
+    if (n.lida) return;
+    await NotificacaoDao().marcarComoLida(n.id!);
+    recarregar();
+  }
+
+  IconData _icone(String tipo) {
     switch (tipo) {
       case 'evento':
         return Icons.event;
@@ -112,94 +103,57 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       body: FutureBuilder<List<Notificacao>>(
         future: futureNotificacoes,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());
-          }
           final lista = snapshot.data ?? [];
-          if (lista.isEmpty) {
+          if (lista.isEmpty)
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.notifications_none,
-                    size: 48,
-                    color: Cores.textoTerciario,
-                  ),
-                  const SizedBox(height: 8),
-                  BuildText(
-                    'Nenhuma notificação por aqui',
-                    color: Cores.textoTerciario,
-                  ),
-                ],
+              child: BuildText(
+                'Nenhuma notificação por aqui',
+                color: Cores.textoTerciario,
               ),
             );
-          }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: lista.length,
             separatorBuilder: (context, i) => const SizedBox(height: 10),
             itemBuilder: (context, i) {
-              final notificacao = lista[i];
+              final n = lista[i];
               return InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () async {
-                  if (!notificacao.lida) {
-                    await NotificacaoDao().marcarComoLida(notificacao.id!);
-                    recarregar();
-                  }
-                },
+                onTap: () => _marcarComoLida(n),
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: notificacao.lida
+                    color: n.lida
                         ? Colors.white
-                        : Cores.verde.withOpacity(0.08),
+                        : Cores.verde.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Cores.verde.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _iconePorTipo(notificacao.tipo),
-                          color: Cores.verde,
-                        ),
-                      ),
+                      Icon(_icone(n.tipo), color: Cores.verde),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            BuildText(notificacao.titulo, bold: true, size: 14),
-                            const SizedBox(height: 4),
+                            BuildText(n.titulo, bold: true, size: 14),
                             BuildText(
-                              notificacao.mensagem,
+                              n.mensagem,
                               size: 13,
                               color: Cores.textoTerciario,
                             ),
-                            const SizedBox(height: 4),
                             BuildText(
-                              notificacao.data,
+                              n.data,
                               size: 11,
                               color: Cores.textoTerciario,
                             ),
                           ],
                         ),
                       ),
-                      if (!notificacao.lida)
+                      if (!n.lida)
                         Container(
                           width: 8,
                           height: 8,

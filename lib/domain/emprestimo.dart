@@ -12,7 +12,7 @@ class Emprestimo {
   Emprestimo({
     this.id,
     required this.tituloLivro,
-    required this.autorLivro,
+    this.autorLivro = '',
     this.capaUrl = '',
     this.isbn = '',
     required this.dataEmprestimo,

@@ -17,10 +17,7 @@ class Explore extends StatefulWidget {
 class _ExploreState extends State<Explore> {
   late Future<List<Post>> futureListaPosts;
   final _pesquisaController = TextEditingController();
-
   String termoPesquisa = '';
-  bool filtrarFavoritos = false;
-  // ainda nao tem a logica pra funcionar
 
   @override
   void initState() {
@@ -40,57 +37,16 @@ class _ExploreState extends State<Explore> {
     });
   }
 
-  List<Post> _aplicarFiltros(List<Post> posts) {
-    var lista = posts;
-
-    if (termoPesquisa.isNotEmpty) {
-      lista = lista
-          .where(
-            (e) => e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()),
-      )
-          .toList();
+  List<Post> _filtrar(List<Post> posts) {
+    List<Post> lista = [];
+    for (var e in posts) {
+      if (termoPesquisa.isNotEmpty &&
+          !e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase())) {
+        continue;
+      }
+      lista.add(e);
     }
-
-    if (filtrarFavoritos) {
-      lista = lista.where((e) => e.favorito).toList();
-    }
-
     return lista;
-  }
-
-  void _abrirFiltro() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: BuildText('Filtrar posts', bold: true, size: 18),
-            content: CheckboxListTile(
-              value: filtrarFavoritos,
-              onChanged: (valor) {
-                setStateDialog(() => filtrarFavoritos = valor ?? false);
-              },
-              title: BuildText('Somente favoritos'),
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Cores.verde,
-              contentPadding: EdgeInsets.zero,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.of(context).pop();
-                },
-                child: BuildText('Aplicar', color: Cores.verde, bold: true),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -108,86 +64,81 @@ class _ExploreState extends State<Explore> {
       body: Column(
         children: [
           _buildBarraPesquisa(),
-          Expanded(child: FutureBuilder(
-            future: futureListaPosts,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final lista = _aplicarFiltros(snapshot.requireData);
-                if (lista.isEmpty) {
+          Expanded(
+            child: FutureBuilder(
+              future: futureListaPosts,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final lista = _filtrar(snapshot.requireData);
+                  if (lista.isEmpty) {
+                    return Center(
+                      child: BuildText(
+                        'Nenhum post encontrado',
+                        color: Cores.textoTerciario,
+                      ),
+                    );
+                  }
+                  return buildListView(lista);
+                }
+                if (snapshot.hasError) {
                   return Center(
-                    child: BuildText(
-                      'Nenhum post encontrado',
-                      color: Cores.textoTerciario,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.grey,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 8),
+                        BuildText('Erro ao carregar posts', color: Colors.red),
+                        BuildText(snapshot.error.toString(), color: Colors.red),
+                      ],
                     ),
                   );
                 }
-                return buildListView(lista);
-              }
-              if (snapshot.hasError) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-                      const SizedBox(height: 8),
-                      BuildText('Erro ao carregar posts', color: Colors.red),
-                      BuildText(snapshot.error.toString(), color: Colors.red),
-                    ],
-                  ),
-                );
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
-          ),)
+                return const Center(child: CircularProgressIndicator());
+              },
+            ),
+          ),
         ],
-      )
+      ),
     );
   }
 
   Widget _buildBarraPesquisa() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _abrirFiltro,
-            icon: Icon(
-              Icons.filter_list,
-              color: filtrarFavoritos ? Cores.verde : Cores.textoTerciario,
-            ),
+      child: TextField(
+        controller: _pesquisaController,
+        onChanged: (valor) => setState(() => termoPesquisa = valor),
+        decoration: InputDecoration(
+          hintText: 'Pesquisar posts...',
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
           ),
-          Expanded(
-            child: TextField(
-              controller: _pesquisaController,
-              onChanged: (valor) => setState(() => termoPesquisa = valor),
-              decoration: InputDecoration(
-                hintText: 'Pesquisar posts...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Builder _buildAction() {
     return Builder(
-      builder: (BuildContext context) => IconButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
-          );
-        },
-        icon: const Icon(Icons.notifications),
-      ),
+      builder: (BuildContext context) =>
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const NotificacoesPage()),
+              );
+            },
+            icon: const Icon(Icons.notifications),
+          ),
     );
   }
 
@@ -205,8 +156,8 @@ class _ExploreState extends State<Explore> {
           recarregar();
         }
       },
-      child: Icon(Icons.edit, color: Colors.white),
       backgroundColor: Cores.verde,
+      child: Icon(Icons.edit, color: Colors.white),
     );
   }
 
