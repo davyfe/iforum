@@ -13,24 +13,12 @@ class Eventos extends StatefulWidget {
 }
 
 class _EventosState extends State<Eventos> {
-  late Future<List<Evento>> futureEventos;
+  late Future<List<Evento>> futureEventos = EventosApi().listarEventos();
   final _pesquisaController = TextEditingController();
 
   String aba = 'programacao';
   String termoPesquisa = '';
   bool filtrarFavoritos = false;
-
-  @override
-  void initState() {
-    super.initState();
-    futureEventos = EventosApi().listarEventos();
-  }
-
-  @override
-  void dispose() {
-    _pesquisaController.dispose();
-    super.dispose();
-  }
 
   void recarregar() {
     setState(() {
@@ -56,26 +44,19 @@ class _EventosState extends State<Eventos> {
   void _abrirFiltro() {
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          title: BuildText('Filtrar eventos', bold: true, size: 18),
-          content: CheckboxListTile(
+      builder: (context) => SimpleDialog(
+        title: BuildText('Filtrar eventos', bold: true, size: 18),
+        children: [
+          CheckboxListTile(
             value: filtrarFavoritos,
-            onChanged: (v) =>
-                setStateDialog(() => filtrarFavoritos = v ?? false),
+            onChanged: (v) {
+              setState(() => filtrarFavoritos = v ?? false);
+              Navigator.of(context).pop();
+            },
             title: BuildText('Somente favoritos'),
             controlAffinity: ListTileControlAffinity.leading,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {});
-                Navigator.of(context).pop();
-              },
-              child: BuildText('Aplicar', color: Cores.verde, bold: true),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -140,8 +121,7 @@ class _EventosState extends State<Eventos> {
     );
   }
 
-  Container _buildAbas() {
-    const abas = {'programacao': 'Programação', 'agenda': 'Minha Agenda'};
+  Widget _buildAbas() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.all(4),
@@ -150,29 +130,34 @@ class _EventosState extends State<Eventos> {
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
-        children: abas.entries.map((entry) {
-          final selecionado = aba == entry.key;
-          return Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(30),
-              onTap: () => setState(() => aba = entry.key),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: selecionado ? Cores.verde : Colors.transparent,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Center(
-                  child: BuildText(
-                    entry.value,
-                    bold: true,
-                    color: selecionado ? Colors.white : Cores.textoTerciario,
+        children: [
+          for (var item in {
+            'programacao': 'Programação',
+            'agenda': 'Minha Agenda',
+          }.entries)
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () => setState(() => aba = item.key),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: aba == item.key ? Cores.verde : Colors.transparent,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Center(
+                    child: BuildText(
+                      item.value,
+                      bold: true,
+                      color: aba == item.key
+                          ? Colors.white
+                          : Cores.textoTerciario,
+                    ),
                   ),
                 ),
               ),
             ),
-          );
-        }).toList(),
+        ],
       ),
     );
   }

@@ -15,15 +15,15 @@ class Biblioteca extends StatefulWidget {
 
 class _BibliotecaState extends State<Biblioteca> {
   final _buscaController = TextEditingController();
+  final _tiposBusca = {
+    'geral': 'Geral',
+    'titulo': 'Título',
+    'autor': 'Autor',
+    'isbn': 'ISBN',
+  };
   String tipoBusca = 'geral';
   Future<List<Livro>>? futureBusca;
-  late Future<List<Livro>> futurePopulares;
-
-  @override
-  void initState() {
-    super.initState();
-    futurePopulares = BibliotecaApi().listarPopulares();
-  }
+  late Future<List<Livro>> futurePopulares = BibliotecaApi().listarPopulares();
 
   Future<List<Livro>> _buscarPorIsbn(String isbn) async {
     final livro = await BibliotecaApi().buscarPorIsbn(isbn);
@@ -32,57 +32,39 @@ class _BibliotecaState extends State<Biblioteca> {
 
   void _pesquisar(String termo) {
     final texto = termo.trim();
-    if (texto.isEmpty) {
-      setState(() => futureBusca = null);
-      return;
-    }
     setState(() {
-      futureBusca = tipoBusca == 'isbn'
+      futureBusca = texto.isEmpty
+          ? null
+          : tipoBusca == 'isbn'
           ? _buscarPorIsbn(texto)
           : BibliotecaApi().pesquisarLivros(texto, tipo: tipoBusca);
     });
   }
 
   void _abrirFiltro() {
-    const opcoes = {
-      'geral': 'Geral',
-      'titulo': 'Título',
-      'autor': 'Autor',
-      'isbn': 'ISBN',
-    };
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) {
-          var valor = tipoBusca;
-          return AlertDialog(
-            title: BuildText('Filtrar busca', bold: true, size: 18),
-            content: RadioGroup<String>(
-              groupValue: valor,
-              onChanged: (v) => setStateDialog(() => valor = v ?? 'geral'),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: opcoes.entries
-                    .map(
-                      (e) => RadioListTile<String>(
-                        value: e.key,
-                        title: BuildText(e.value),
-                      ),
-                    )
-                    .toList(),
-              ),
+      builder: (context) => SimpleDialog(
+        title: BuildText('Filtrar busca', bold: true, size: 18),
+        children: [
+          RadioGroup<String>(
+            groupValue: tipoBusca,
+            onChanged: (v) {
+              setState(() => tipoBusca = v!);
+              Navigator.of(context).pop();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var chave in _tiposBusca.keys)
+                  RadioListTile<String>(
+                    value: chave,
+                    title: BuildText(_tiposBusca[chave]!),
+                  ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() => tipoBusca = valor);
-                  Navigator.of(context).pop();
-                },
-                child: BuildText('Aplicar', color: Cores.verde, bold: true),
-              ),
-            ],
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -114,13 +96,68 @@ class _BibliotecaState extends State<Biblioteca> {
       body: Column(
         children: [
           _buildBarraPesquisa(),
-          Expanded(child: _buildResultado()),
+          Expanded(
+            child: FutureBuilder<List<Livro>>(
+              future: futureBusca ?? futurePopulares,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: BuildText(
+                      'Erro ao buscar livros',
+                      color: Colors.red,
+                    ),
+                  );
+                }
+                final livros = snapshot.data!;
+                return ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    BuildText(
+                      futureBusca == null ? 'Populares' : 'Resultados',
+                      bold: true,
+                      size: 18,
+                    ),
+                    const SizedBox(height: 10),
+                    if (livros.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 40),
+                        child: Center(
+                          child: BuildText(
+                            'Nenhum livro encontrado',
+                            color: Cores.textoTerciario,
+                          ),
+                        ),
+                      )
+                    else
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: livros.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.55,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
+                        itemBuilder: (context, i) =>
+                            BuildLivroCard(livro: livros[i]),
+                      ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Padding _buildBarraPesquisa() {
+  Widget _buildBarraPesquisa() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
       child: Row(
@@ -153,55 +190,6 @@ class _BibliotecaState extends State<Biblioteca> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildResultado() {
-    final titulo = futureBusca == null ? 'Populares' : 'Resultados';
-    return FutureBuilder<List<Livro>>(
-      future: futureBusca ?? futurePopulares,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: BuildText('Erro ao buscar livros', color: Colors.red),
-          );
-        }
-        final livros = snapshot.data!;
-        return ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: [
-            BuildText(titulo, bold: true, size: 18),
-            const SizedBox(height: 10),
-            if (livros.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 40),
-                child: Center(
-                  child: BuildText(
-                    'Nenhum livro encontrado',
-                    color: Cores.textoTerciario,
-                  ),
-                ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: livros.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.55,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemBuilder: (context, i) => BuildLivroCard(livro: livros[i]),
-              ),
-            const SizedBox(height: 20),
-          ],
-        );
-      },
     );
   }
 }

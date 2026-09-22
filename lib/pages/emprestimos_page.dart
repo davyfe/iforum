@@ -11,31 +11,16 @@ class EmprestimosPage extends StatefulWidget {
   State<EmprestimosPage> createState() => _EmprestimosPageState();
 }
 
-class _EmprestimosPageState extends State<EmprestimosPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late Future<List<Emprestimo>> futureAtuais;
-  late Future<List<Emprestimo>> futureAntigos;
+class _EmprestimosPageState extends State<EmprestimosPage> {
+  late Future<List<Emprestimo>> futureAtuais = EmprestimoApi().listarAtuais();
+  late Future<List<Emprestimo>> futureAntigos = EmprestimoApi().listarAntigos();
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _carregar();
+  void recarregar() {
+    setState(() {
+      futureAtuais = EmprestimoApi().listarAtuais();
+      futureAntigos = EmprestimoApi().listarAntigos();
+    });
   }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _carregar() {
-    futureAtuais = EmprestimoApi().listarAtuais();
-    futureAntigos = EmprestimoApi().listarAntigos();
-  }
-
-  void recarregar() => setState(_carregar);
 
   String _formatarData(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -63,34 +48,35 @@ class _EmprestimosPageState extends State<EmprestimosPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Cores.fundo,
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText(
-          'Meus empréstimos',
-          bold: true,
-          color: Colors.white,
-          size: 18,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Cores.fundo,
+        appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
+          backgroundColor: Cores.verde,
+          title: BuildText(
+            'Meus empréstimos',
+            bold: true,
+            color: Colors.white,
+            size: 18,
+          ),
+          bottom: TabBar(
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: const [
+              Tab(text: 'Atuais'),
+              Tab(text: 'Histórico'),
+            ],
+          ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Atuais'),
-            Tab(text: 'Histórico'),
+        body: TabBarView(
+          children: [
+            _buildLista(futureAtuais, atual: true),
+            _buildLista(futureAntigos, atual: false),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildLista(futureAtuais, atual: true),
-          _buildLista(futureAntigos, atual: false),
-        ],
       ),
     );
   }
@@ -141,17 +127,13 @@ class _EmprestimosPageState extends State<EmprestimosPage>
             size: 12,
             color: Cores.textoTerciario,
           ),
-          atual
-              ? BuildText(
-                  'Devolução até ${e.dataPrevista}',
-                  size: 12,
-                  color: Colors.redAccent,
-                )
-              : BuildText(
-                  'Devolvido em ${e.dataDevolucao}',
-                  size: 12,
-                  color: Cores.textoTerciario,
-                ),
+          BuildText(
+            atual
+                ? 'Devolução até ${e.dataPrevista}'
+                : 'Devolvido em ${e.dataDevolucao}',
+            size: 12,
+            color: atual ? Colors.redAccent : Cores.textoTerciario,
+          ),
           if (atual) ...[
             BuildText(
               'Renovações: ${e.renovacoes}/3',
