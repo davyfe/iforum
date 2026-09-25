@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
-
 import '/db/post_dao.dart';
 import '/domain/post.dart';
 import '/widget/build_post.dart';

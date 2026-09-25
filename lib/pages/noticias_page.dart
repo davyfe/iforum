@@ -32,6 +32,7 @@ class _NoticiasState extends State<Noticias> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Cores.fundo,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Cores.verde,

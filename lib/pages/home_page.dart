@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  buildBottomNavBar() {
+  BottomNavigationBar buildBottomNavBar() {
     return BottomNavigationBar(
       backgroundColor: Cores.fundo,
       currentIndex: selectedIndex,
@@ -38,14 +38,30 @@ class _HomeState extends State<Home> {
         });
       },
       items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-        BottomNavigationBarItem(icon: Icon(Icons.event_note), label: 'Eventos'),
         BottomNavigationBarItem(
-          icon: Icon(Icons.collections_bookmark),
+          icon: Icon(selectedIndex == 0 ? Icons.home : Icons.home_outlined),
+          label: 'Início',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(
+            selectedIndex == 1 ? Icons.event_note : Icons.event_note_outlined,
+          ),
+          label: 'Eventos',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(selectedIndex == 2 ? Icons.book : Icons.book_outlined),
           label: 'Biblioteca',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Notícias'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Você'),
+        BottomNavigationBarItem(
+          icon: Icon(
+            selectedIndex == 3 ? Icons.article : Icons.article_outlined,
+          ),
+          label: 'Notícias',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(selectedIndex == 4 ? Icons.person : Icons.person_outline),
+          label: 'Eu',
+        ),
       ],
     );
   }

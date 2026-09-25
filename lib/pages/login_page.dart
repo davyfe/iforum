@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/widget/build_text.dart';
 import '/cores.dart';
 import '/api/user_api.dart';
 import '/db/shared_prefs.dart';
@@ -74,13 +75,18 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 80, bottom: 40, left: 24, right: 24),
+              padding: const EdgeInsets.only(
+                top: 80,
+                bottom: 40,
+                left: 24,
+                right: 24,
+              ),
               decoration: BoxDecoration(
                 color: Cores.verde,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
+                // borderRadius: const BorderRadius.only(
+                //   bottomLeft: Radius.circular(24),
+                //   bottomRight: Radius.circular(24),
+                // ),
               ),
               child: Column(
                 children: [
@@ -91,29 +97,20 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.forum_rounded,
-                      size: 40,
-                      color: Cores.verde,
-                    ),
+                    child: Icon(Icons.school, size: 40, color: Cores.verde),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  BuildText(
                     'IFORUM',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                    ),
+                    size: 28,
+                    bold: true,
+                    color: Colors.white,
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  BuildText(
                     'Conectando a comunidade acadêmica',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.85),
-                    ),
+                    size: 14,
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ],
               ),
@@ -124,13 +121,11 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 16),
-                  const Text(
+                  BuildText(
                     'Entrar na sua conta',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    size: 20,
+                    bold: true,
+                    color: Colors.black87,
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -139,20 +134,30 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: InputDecoration(
                       labelText: 'E-mail ou usuário',
                       labelStyle: TextStyle(color: Cores.textoSecundario),
-                      prefixIcon: Icon(Icons.person_outline, color: Cores.verde),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Cores.verde,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide(color: Cores.verde, width: 2),
                       ),
                     ),
@@ -167,7 +172,9 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: Icon(Icons.lock_outline, color: Cores.verde),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _ocultarSenha ? Icons.visibility_off : Icons.visibility,
+                          _ocultarSenha
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Cores.verde,
                         ),
                         onPressed: () {
@@ -178,17 +185,24 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Cores.textoTerciario.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Cores.textoTerciario.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide(color: Cores.verde, width: 2),
                       ),
                     ),
@@ -214,48 +228,42 @@ class _LoginPageState extends State<LoginPage> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 0,
                     ),
                     child: _carregando
                         ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : const Text(
-                      'ENTRAR',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : BuildText('ENTRAR', size: 16, bold: true),
                   ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      BuildText(
                         'Ainda não tem conta? ',
-                        style: TextStyle(color: Cores.textoSecundario),
+                        color: Cores.textoSecundario,
                       ),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegistroPage()),
+                            MaterialPageRoute(
+                              builder: (context) => const RegistroPage(),
+                            ),
                           );
                         },
-                        child: Text(
+                        child: BuildText(
                           'Cadastre-se',
-                          style: TextStyle(
-                            color: Cores.verde,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          color: Cores.verde,
+                          bold: true,
                         ),
                       ),
                     ],

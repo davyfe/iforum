@@ -20,6 +20,7 @@ class _BuildPostState extends State<BuildPost> {
       onTap: () {},
       child: Column(
         children: [
+          const Divider(color: Colors.black54, thickness: 0.6, height: 1),
           Container(
             padding: EdgeInsets.only(top: 15, bottom: 10, left: 20, right: 20),
             child: Column(
@@ -77,7 +78,6 @@ class _BuildPostState extends State<BuildPost> {
               ],
             ),
           ),
-          const Divider(color: Colors.black54, thickness: 0.5, height: 1),
         ],
       ),
     );

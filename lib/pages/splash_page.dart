@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '/widget/build_text.dart';
 import '/cores.dart';
 import '/db/shared_prefs.dart';
-import 'package:iforum/pages/login_page.dart';
-import 'package:iforum/pages/home_page.dart';
+import '/pages/login_page.dart';
+import '/pages/home_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -57,29 +58,15 @@ class _SplashPageState extends State<SplashPage> {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.forum_rounded,
-                size: 48,
-                color: Cores.verde,
-              ),
+              child: Icon(Icons.school, size: 48, color: Cores.verde),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'IFORUM',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
-            ),
+            BuildText('IFORUM', size: 32, bold: true, color: Colors.white),
             const SizedBox(height: 8),
-            Text(
+            BuildText(
               'Conectando a comunidade acadêmica',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.85),
-              ),
+              size: 14,
+              color: Colors.white.withValues(alpha: 0.85),
             ),
             const SizedBox(height: 48),
             const CircularProgressIndicator(

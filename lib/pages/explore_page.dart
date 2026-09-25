@@ -18,6 +18,7 @@ class _ExploreState extends State<Explore> {
   late Future<List<Post>> futureListaPosts;
   final _pesquisaController = TextEditingController();
   String termoPesquisa = '';
+  bool filtrar = false;
 
   @override
   void initState() {
@@ -53,53 +54,65 @@ class _ExploreState extends State<Explore> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Cores.fundo,
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Cores.verde,
-        title: BuildText('IFÓRUM', bold: true, color: Colors.white, size: 20),
-        centerTitle: true,
-        actions: [_buildAction()],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          iconTheme: IconThemeData(color: Cores.verde),
+          backgroundColor: Cores.fundo,
+          title: _buildBarraPesquisa(),
+          leading: _buildLeading(),
+          actions: [_buildAction()],
+        ),
       ),
       floatingActionButton: _buildFloatingActionButton(),
-      body: Column(
+      body: FutureBuilder(
+        future: futureListaPosts,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final lista = _filtrar(snapshot.requireData);
+            if (lista.isEmpty) {
+              return Center(
+                child: BuildText(
+                  'Nenhum post encontrado',
+                  color: Cores.textoTerciario,
+                ),
+              );
+            }
+            return buildListView(lista);
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.grey, size: 48),
+                  const SizedBox(height: 8),
+                  BuildText('Erro ao carregar posts', color: Colors.red),
+                  BuildText(snapshot.error.toString(), color: Colors.red),
+                ],
+              ),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+
+  void _abrirFiltro() {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: BuildText('Filtrar eventos', bold: true, size: 18),
         children: [
-          _buildBarraPesquisa(),
-          Expanded(
-            child: FutureBuilder(
-              future: futureListaPosts,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final lista = _filtrar(snapshot.requireData);
-                  if (lista.isEmpty) {
-                    return Center(
-                      child: BuildText(
-                        'Nenhum post encontrado',
-                        color: Cores.textoTerciario,
-                      ),
-                    );
-                  }
-                  return buildListView(lista);
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.grey,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 8),
-                        BuildText('Erro ao carregar posts', color: Colors.red),
-                        BuildText(snapshot.error.toString(), color: Colors.red),
-                      ],
-                    ),
-                  );
-                }
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
+          CheckboxListTile(
+            value: filtrar,
+            onChanged: (v) {
+              setState(() => filtrar = v ?? false);
+              Navigator.of(context).pop();
+            },
+            title: BuildText('APENAS ESTÉTICO POR ENQUANTO'),
+            controlAffinity: ListTileControlAffinity.leading,
           ),
         ],
       ),
@@ -108,7 +121,7 @@ class _ExploreState extends State<Explore> {
 
   Widget _buildBarraPesquisa() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
       child: TextField(
         controller: _pesquisaController,
         onChanged: (valor) => setState(() => termoPesquisa = valor),
@@ -127,18 +140,27 @@ class _ExploreState extends State<Explore> {
     );
   }
 
+  IconButton _buildLeading() {
+    return IconButton(
+      onPressed: _abrirFiltro,
+      icon: Icon(
+        Icons.filter_list,
+        size: 30,
+        color: filtrar ? Cores.verde : Cores.textoTerciario,
+      ),
+    );
+  }
+
   Builder _buildAction() {
     return Builder(
-      builder: (BuildContext context) =>
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => const NotificacoesPage()),
-              );
-            },
-            icon: const Icon(Icons.notifications),
-          ),
+      builder: (BuildContext context) => IconButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
+          );
+        },
+        icon: const Icon(Icons.notifications, size: 30),
+      ),
     );
   }
 
@@ -147,16 +169,18 @@ class _ExploreState extends State<Explore> {
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-          MaterialPageRoute(
-            builder: (context) => const CriarPost(),
-            fullscreenDialog: true,
-          ),
-        );
+              MaterialPageRoute(
+                builder: (context) => const CriarPost(),
+                fullscreenDialog: true,
+              ),
+            );
         if (criou == true) {
           recarregar();
         }
       },
       backgroundColor: Cores.verde,
+      shape: const CircleBorder(),
+      elevation: 15,
       child: Icon(Icons.edit, color: Colors.white),
     );
   }
