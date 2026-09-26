@@ -31,7 +31,7 @@ class BuildLivroCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
-                color: Cores.avatar.withOpacity(0.15),
+                color: Cores.avatar.withValues(alpha: 0.15),
                 child: livro.capaUrl.isNotEmpty
                     ? Image.network(
                         livro.capaUrl,

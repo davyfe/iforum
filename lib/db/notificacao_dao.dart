@@ -22,6 +22,7 @@ class NotificacaoDao {
 
   Future<int> marcarComoLida(int id) async {
     Database db = await DbHelper().initDB();
+    print('lido!');
     return db.update(
       'NOTIFICACAO',
       {'lida': 1},

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/widget/build_text.dart';
 import '/widget/build_post.dart';
 import 'notificacoes_page.dart';
+import '/db/notificacao_dao.dart';
 import '/api/post_api.dart';
 import '/domain/post.dart';
 import 'criar_page.dart';
@@ -16,6 +17,7 @@ class Explore extends StatefulWidget {
 
 class _ExploreState extends State<Explore> {
   late Future<List<Post>> futureListaPosts;
+  late Future<bool> futureNotificacoes; // para notificacoes
   final _pesquisaController = TextEditingController();
   String termoPesquisa = '';
   bool filtrar = false;
@@ -24,6 +26,7 @@ class _ExploreState extends State<Explore> {
   void initState() {
     super.initState();
     futureListaPosts = PostsApi().listarPosts();
+    futureNotificacoes = _verificarNotificacoes();
   }
 
   @override
@@ -38,11 +41,20 @@ class _ExploreState extends State<Explore> {
     });
   }
 
+  Future<bool> _verificarNotificacoes() async {
+    final lista = await NotificacaoDao().listarNotificacoes();
+    for (var n in lista) {
+      if (!n.lida) return true;
+    }
+    return false;
+  }
+
   List<Post> _filtrar(List<Post> posts) {
     List<Post> lista = [];
     for (var e in posts) {
       if (termoPesquisa.isNotEmpty &&
-          !e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase())) {
+          !e.titulo.toLowerCase().contains(termoPesquisa.toLowerCase()) &&
+          !e.autor.toLowerCase().contains(termoPesquisa.toLowerCase())) {
         continue;
       }
       lista.add(e);
@@ -54,15 +66,11 @@ class _ExploreState extends State<Explore> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Cores.fundo,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: AppBar(
-          iconTheme: IconThemeData(color: Cores.verde),
-          backgroundColor: Cores.fundo,
-          title: _buildBarraPesquisa(),
-          leading: _buildLeading(),
-          actions: [_buildAction()],
-        ),
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Cores.verde),
+        backgroundColor: Cores.fundo,
+        title: _buildBarraPesquisa(),
+        actions: [_buildAction()],
       ),
       floatingActionButton: _buildFloatingActionButton(),
       body: FutureBuilder(
@@ -99,26 +107,6 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-  void _abrirFiltro() {
-    showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: BuildText('Filtrar eventos', bold: true, size: 18),
-        children: [
-          CheckboxListTile(
-            value: filtrar,
-            onChanged: (v) {
-              setState(() => filtrar = v ?? false);
-              Navigator.of(context).pop();
-            },
-            title: BuildText('APENAS ESTÉTICO POR ENQUANTO'),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBarraPesquisa() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 16, 8),
@@ -140,27 +128,23 @@ class _ExploreState extends State<Explore> {
     );
   }
 
-  IconButton _buildLeading() {
-    return IconButton(
-      onPressed: _abrirFiltro,
-      icon: Icon(
-        Icons.filter_list,
-        size: 30,
-        color: filtrar ? Cores.verde : Cores.textoTerciario,
-      ),
-    );
-  }
-
-  Builder _buildAction() {
-    return Builder(
-      builder: (BuildContext context) => IconButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const NotificacoesPage()),
-          );
-        },
-        icon: const Icon(Icons.notifications, size: 30),
-      ),
+  FutureBuilder<bool> _buildAction() {
+    return FutureBuilder<bool>(
+      future: futureNotificacoes,
+      builder: (context, snapshot) {
+        final naoLido = snapshot.data ?? false;
+        return IconButton(
+          icon: Icon(
+            naoLido ? Icons.notifications : Icons.notifications_none,
+            size: 30,
+          ),
+          onPressed: () async {
+            await Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const NotificacoesPage()),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -169,11 +153,11 @@ class _ExploreState extends State<Explore> {
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-              MaterialPageRoute(
-                builder: (context) => const CriarPost(),
-                fullscreenDialog: true,
-              ),
-            );
+          MaterialPageRoute(
+            builder: (context) => const CriarPost(),
+            fullscreenDialog: true,
+          ),
+        );
         if (criou == true) {
           recarregar();
         }

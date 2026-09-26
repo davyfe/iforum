@@ -40,21 +40,26 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
         int.parse(p[2]),
         int.parse(p[1]),
         int.parse(p[0]),
-      ).difference(hoje).inDays;
+      )
+          .difference(hoje)
+          .inDays;
       if (dias < 0 || dias > 3) continue;
       if (existentes.any(
-        (n) => n.tipo == 'evento' && n.titulo.contains(evento.titulo),
-      ))
+            (n) => n.tipo == 'evento' && n.titulo.contains(evento.titulo),
+      )) {
         continue;
+      }
 
       await NotificacaoDao().inserirNotificacao(
         Notificacao(
           titulo: 'Evento em breve: ${evento.titulo}',
           mensagem:
-              'Acontece em ${evento.data} às ${evento.horario}, em ${evento.local}.',
+          'Acontece em ${evento.data} às ${evento.horario}, em ${evento
+              .local}.',
           tipo: 'evento',
           data:
-              '${hoje.day.toString().padLeft(2, '0')}/${hoje.month.toString().padLeft(2, '0')}/${hoje.year}',
+          '${hoje.day.toString().padLeft(2, '0')}/${hoje.month.toString()
+              .padLeft(2, '0')}/${hoje.year}',
         ),
       );
     }
@@ -64,8 +69,10 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
 
   Future<void> _marcarComoLida(Notificacao n) async {
     if (n.lida) return;
+    setState(() {
+      n.lida = true;
+    });
     await NotificacaoDao().marcarComoLida(n.id!);
-    recarregar();
   }
 
   IconData _icone(String tipo) {
@@ -103,16 +110,18 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       body: FutureBuilder<List<Notificacao>>(
         future: futureNotificacoes,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
           final lista = snapshot.data ?? [];
-          if (lista.isEmpty)
+          if (lista.isEmpty) {
             return Center(
               child: BuildText(
                 'Nenhuma notificação por aqui',
                 color: Cores.textoTerciario,
               ),
             );
+          }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: lista.length,
