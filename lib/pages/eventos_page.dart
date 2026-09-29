@@ -70,12 +70,6 @@ class _EventosState extends State<Eventos> {
         backgroundColor: Cores.verde,
         title: BuildText('Eventos', bold: true, color: Colors.white, size: 20),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: recarregar,
-          ),
-        ],
       ),
       body: Column(
         children: [

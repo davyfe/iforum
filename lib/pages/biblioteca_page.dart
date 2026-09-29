@@ -86,7 +86,7 @@ class _BibliotecaState extends State<Biblioteca> {
         actions: [
           IconButton(
             tooltip: 'Meus empréstimos',
-            icon: const Icon(Icons.history_edu_outlined),
+            icon: const Icon(Icons.bookmarks),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const EmprestimosPage()),
             ),

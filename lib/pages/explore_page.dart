@@ -142,6 +142,7 @@ class _ExploreState extends State<Explore> {
             await Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const NotificacoesPage()),
             );
+            setState(() => futureNotificacoes = _verificarNotificacoes());
           },
         );
       },
@@ -153,11 +154,11 @@ class _ExploreState extends State<Explore> {
       onPressed: () async {
         final criou = await Navigator.of(context, rootNavigator: true)
             .push<bool>(
-          MaterialPageRoute(
-            builder: (context) => const CriarPost(),
-            fullscreenDialog: true,
-          ),
-        );
+              MaterialPageRoute(
+                builder: (context) => const CriarPost(),
+                fullscreenDialog: true,
+              ),
+            );
         if (criou == true) {
           recarregar();
         }
