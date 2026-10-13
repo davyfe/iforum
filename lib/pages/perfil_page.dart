@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 import '/db/post_dao.dart';
@@ -94,17 +95,34 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           const SizedBox(height: 15),
           Row(
             children: [
-              const Icon(Icons.school, size: 15, color: Colors.white),
-              const SizedBox(width: 5),
-              BuildText('Técnico em Informática', color: Colors.white),
+              _buildChip(Icons.school, 'Téc. em Informática'),
               const SizedBox(width: 15),
-              const Icon(Icons.location_city, color: Colors.white, size: 15),
-              const SizedBox(width: 5),
-              BuildText('Campus Arapiraca', color: Colors.white),
+              _buildChip(Icons.location_pin, 'Campus Arapiraca'),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  ActionChip _buildChip(IconData icon, String text){
+    return ActionChip(
+      avatar: Icon(icon, color: Colors.white),
+      label: BuildText(text, color: Colors.white, size: 12),
+      onPressed: () {},
+      backgroundColor: Colors.black,
+      elevation: 0,
+      side: const BorderSide(
+        color: Colors.white,
+        width: 1,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+      padding: EdgeInsets.only(right: 5),
+      labelPadding: const EdgeInsets.only(left: 2, right: 4),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 
