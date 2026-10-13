@@ -42,11 +42,8 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final autenticado = await UserApi().login(usuario, senha);
 
-      if (!mounted) return;
-
       if (autenticado) {
         await SharedPrefs().setUserStatus(true);
-        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Home()),
@@ -57,12 +54,11 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao conectar. Tente novamente.')),
       );
     } finally {
-      if (mounted) setState(() => _carregando = false);
+      setState(() => _carregando = false);
     }
   }
 

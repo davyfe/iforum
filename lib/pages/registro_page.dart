@@ -61,7 +61,6 @@ class _RegistroPageState extends State<RegistroPage> {
       final jaExiste = await UserApi().usernameExiste(usuario);
 
       if (jaExiste) {
-        if (!mounted) return;
         _mostrarErro('Esse nome de usuário já está em uso.');
         return;
       }
@@ -69,13 +68,11 @@ class _RegistroPageState extends State<RegistroPage> {
       await UserApi().registrar(User(usuario, senha));
       await SharedPrefs().setUserStatus(true);
 
-      if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Conta criada com sucesso!')),
       );
 
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
       );

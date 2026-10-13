@@ -45,10 +45,10 @@ class UserApi {
         'https://my-json-server.typicode.com/davyfe/fake_api/user',
         data: user.toJson(),
       );
+      await SharedPrefs().salvarUsuarioLocal(user);
     } catch (_) {
     }
 
-    await SharedPrefs().salvarUsuarioLocal(user);
     return true;
   }
 }

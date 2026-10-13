@@ -20,4 +20,7 @@ class Noticia {
     data = json['data'] ?? '';
     urlImagem = json['urlImagem'] ?? '';
   }
+
+
+
 }

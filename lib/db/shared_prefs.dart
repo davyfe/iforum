@@ -14,6 +14,7 @@ class SharedPrefs {
     return value ?? false;
   }
 
+  // busca usuarios na lista, pega user converte em json e transforma em string
   Future<void> salvarUsuarioLocal(User user) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> lista = prefs.getStringList('USUARIOS_LOCAIS') ?? [];
@@ -21,6 +22,7 @@ class SharedPrefs {
     await prefs.setStringList('USUARIOS_LOCAIS', lista);
   }
 
+  // pega a lista, olha cada string, transforma de volta em map json e converte em user
   Future<List<User>> obterUsuariosLocais() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> lista = prefs.getStringList('USUARIOS_LOCAIS') ?? [];

@@ -24,8 +24,6 @@ class _SplashPageState extends State<SplashPage> {
 
     bool estaAutenticado = await _checarStatusLogin();
 
-    if (!mounted) return;
-
     if (estaAutenticado) {
       Navigator.pushReplacement(
         context,
