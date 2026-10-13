@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/domain/evento.dart';
 import '/api/evento_api.dart';
 import '/cores.dart';
+import 'build_map.dart';
 import 'build_text.dart';
 
 class BuildEventoDetalhe extends StatefulWidget {
@@ -115,7 +116,12 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
               ),
               const SizedBox(width: 6),
               Expanded(
-                child: BuildText(evento.local, color: Cores.textoTerciario),
+                child: InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => MapPage()),
+                  ),
+                  child: BuildText(evento.local, color: Cores.textoTerciario),
+                )
               ),
             ],
           ),
