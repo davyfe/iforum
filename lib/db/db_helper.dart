@@ -98,19 +98,19 @@ class DbHelper {
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03/2026', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', ${Colors.lightBlueAccent.toARGB32()})";
+    "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('IV Semana Nacional de Ciência e Tecnologia', '30/03', '8:30', 'Ifal Campus Arapiraca', 'Adriana Santana', 4288766170)";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06/2026', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', ${Colors.lightGreen.toARGB32()})";
+    "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Semana do Meio Ambiente 2026', '10/06', '9:30', 'Ifal Campus Arapiraca', 'Comissão de Meio Ambiente', 4280713450)";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Abril Índigena', '16/04/2026', '9:30', 'Ifal Campus Arapiraca', 'Sante', ${Colors.redAccent.toARGB32()})";
+    "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Abril Índigena', '16/04', '9:30', 'Ifal Campus Arapiraca', 'Sante', 4293954838)";
     await db.execute(sql);
 
     sql =
-        "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('V Festival de Arte', '04/12/2024', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', ${Colors.yellow.toARGB32()})";
+    "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('V Festival de Arte', '04/12', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', 4294912563)";
     await db.execute(sql);
 
     sql = '''CREATE TABLE EMPRESTIMO (

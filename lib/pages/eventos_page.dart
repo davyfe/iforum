@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../db/evento_dao.dart'; // porque caiu a api
 import '/widget/build_text.dart';
 import '/widget/build_evento_card.dart';
 import '/api/evento_api.dart';
@@ -13,7 +14,7 @@ class Eventos extends StatefulWidget {
 }
 
 class _EventosState extends State<Eventos> {
-  late Future<List<Evento>> futureEventos = EventosApi().listarEventos();
+  late Future<List<Evento>> futureEventos = EventoDao().listarEventos();
   final _pesquisaController = TextEditingController();
 
   String aba = 'programacao';
