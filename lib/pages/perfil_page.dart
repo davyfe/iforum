@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '/widget/build_text.dart';
-import '/cores.dart';
-import '/db/post_dao.dart';
-import '/domain/post.dart';
-import '/widget/build_post.dart';
-
-// nota: atualmente, no banco de dados de usuário
-// só tem username e senha, o resto coloco manualmente.
-// p/ depois: editar perfil e adocionar outros atributos no banco.
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../widget/build_text.dart';
+import '../cores.dart';
+import '../db/post_dao.dart';
+import '../widget/build_post.dart';
+import 'mapa_campus_page.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({super.key});
@@ -19,12 +15,62 @@ class Perfil extends StatefulWidget {
 
 class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   final usuario = 'pdrolopes';
-  late final Future<List<Post>> _postsFuture;
+  late final Future<List<dynamic>> _postsFuture;
+
+  static const LatLng _campusArapiraca = LatLng(-9.7561, -36.6578);
 
   @override
   void initState() {
     super.initState();
     _postsFuture = PostDao().listarPorAutor(usuario);
+  }
+
+  void _exibirMapaCampus(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.65,
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('Campus Arapiraca'),
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            body: GoogleMap(
+              initialCameraPosition: const CameraPosition(
+                target: _campusArapiraca,
+                zoom: 16.0,
+              ),
+              markers: {
+                const Marker(
+                  markerId: MarkerId('campus_arapiraca'),
+                  position: _campusArapiraca,
+                  infoWindow: InfoWindow(
+                    title: 'Campus Arapiraca',
+                    snippet: 'IFAL - Campus Arapiraca',
+                  ),
+                ),
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -57,7 +103,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   Widget _buildHeader({required String username}) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: 25, right: 25, bottom: 20, top: 70),
+      padding: const EdgeInsets.only(left: 25, right: 25, bottom: 20, top: 70),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
@@ -86,7 +132,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           ),
           const SizedBox(height: 10),
           BuildText(
-            '\'Não esquecer que por enquanto é tempo de morangos. Sim.\' - Clarice Lispector, A Hora da Estrela.',
+            '\'Não esquecer que por enquanto é tempo de morangos. Sim.\' Clarice Lispector, A Hora da Estrela.',
             size: 15,
             color: Colors.white,
             maxLines: 3,
@@ -95,9 +141,19 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           const SizedBox(height: 15),
           Row(
             children: [
-              _buildChip(Icons.school, 'Téc. em Informática'),
+              _buildChip(
+                Icons.location_pin,
+                'Abrir Página',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const MapaCampusPage()),
+                ),
+              ),
               const SizedBox(width: 15),
-              _buildChip(Icons.location_pin, 'Campus Arapiraca'),
+              _buildChip(
+                Icons.location_pin,
+                'Abrir Modal',
+                onTap: () => _exibirMapaCampus(context),
+              ),
             ],
           ),
         ],
@@ -105,11 +161,11 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
     );
   }
 
-  ActionChip _buildChip(IconData icon, String text){
+  Widget _buildChip(IconData icon, String text, {VoidCallback? onTap}) {
     return ActionChip(
       avatar: Icon(icon, color: Colors.white),
       label: BuildText(text, color: Colors.white, size: 12),
-      onPressed: () {},
+      onPressed: onTap ?? () {},
       backgroundColor: Colors.black,
       elevation: 0,
       side: const BorderSide(
@@ -120,7 +176,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
         borderRadius: BorderRadius.circular(20),
       ),
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-      padding: EdgeInsets.only(right: 5),
+      padding: const EdgeInsets.only(right: 5),
       labelPadding: const EdgeInsets.only(left: 2, right: 4),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
@@ -135,18 +191,17 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           labelColor: Colors.black,
           indicatorColor: Cores.verde,
           indicatorWeight: 3.0,
-          labelStyle: TextStyle(fontWeight: FontWeight.bold),
-          tabs: [Tab(text: "Posts")],
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          tabs: const [Tab(text: "Posts")],
         ),
       ),
     );
   }
 
   Widget _buildPosts() {
-    return FutureBuilder<List<Post>>(
+    return FutureBuilder<List<dynamic>>(
       future: _postsFuture,
       builder: (context, snapshot) {
-        // verifica possiveis acontecimentos durante o carregamento dos posts
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -172,14 +227,14 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
           return Center(
             child: RichText(
               textAlign: TextAlign.center,
-              text: TextSpan(
-                style: const TextStyle(
+              text: const TextSpan(
+                style: TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
                 children: [
-                  const TextSpan(text: 'Você não possui nenhum post.'),
+                  TextSpan(text: 'Você não possui nenhum post.'),
                 ],
               ),
             ),
@@ -187,10 +242,9 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
         }
 
         return ListView.builder(
-          padding: EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.only(bottom: 20),
           itemCount: posts.length,
           shrinkWrap: true,
-          // para ocupar apenas o espaço do conteúdo
           physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, i) => BuildPost(post: posts[i]),
         );
