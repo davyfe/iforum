@@ -5,6 +5,7 @@ import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/noticia.dart';
 import '/pages/noticias_ifal_page.dart';
+import '/pages/mapa_noticias_page.dart';
 
 class Noticias extends StatefulWidget {
   const Noticias({super.key});
@@ -38,6 +39,16 @@ class _NoticiasState extends State<Noticias> {
         title: BuildText('Notícias', bold: true, color: Colors.white, size: 20),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined),
+            tooltip: 'Mapa',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MapaNoticiasPage()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.language_outlined),
             tooltip: 'Notícias Gerais',
