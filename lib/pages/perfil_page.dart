@@ -148,18 +148,12 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
             children: [
               _buildChip(
                 Icons.location_pin,
-                'Abrir Página',
+                'Campus Arapiraca',
                 onTap: () =>
                     Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => const MapaCampusPage()),
                     ),
-              ),
-              const SizedBox(width: 15),
-              _buildChip(
-                Icons.location_pin,
-                'Abrir Modal',
-                onTap: () => _exibirMapaCampus(context),
               ),
             ],
           ),
