@@ -40,16 +40,6 @@ class _NoticiasState extends State<Noticias> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.map_outlined),
-            tooltip: 'Mapa',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MapaNoticiasPage()),
-              );
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.language_outlined),
             tooltip: 'Notícias Gerais',
             onPressed: () {
