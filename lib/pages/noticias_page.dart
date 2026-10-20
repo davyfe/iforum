@@ -5,6 +5,7 @@ import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/noticia.dart';
 import '/pages/noticias_ifal_page.dart';
+import '/pages/mapa_noticias_page.dart';
 
 class Noticias extends StatefulWidget {
   const Noticias({super.key});

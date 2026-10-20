@@ -17,7 +17,7 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   final usuario = 'pdrolopes';
   late final Future<List<dynamic>> _postsFuture;
 
-  static const LatLng _campusArapiraca = LatLng(-9.7561, -36.6578);
+ static const LatLng _campusArapiraca = LatLng(-9.745653, -36.631347);
 
   @override
   void initState() {
@@ -33,39 +33,41 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.65,
-          clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Campus Arapiraca'),
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              centerTitle: true,
-              leading: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            body: GoogleMap(
-              initialCameraPosition: const CameraPosition(
-                target: _campusArapiraca,
-                zoom: 16.0,
-              ),
-              markers: {
-                const Marker(
-                  markerId: MarkerId('campus_arapiraca'),
-                  position: _campusArapiraca,
-                  infoWindow: InfoWindow(
-                    title: 'Campus Arapiraca',
-                    snippet: 'IFAL - Campus Arapiraca',
-                  ),
+        return SizedBox(
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.65,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Campus Arapiraca'),
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                centerTitle: true,
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              },
+              ),
+              body: GoogleMap(
+                initialCameraPosition: const CameraPosition(
+                  target: _campusArapiraca,
+                  zoom: 16.0,
+                ),
+                markers: {
+                  const Marker(
+                    markerId: MarkerId('campus_arapiraca'),
+                    position: _campusArapiraca,
+                    infoWindow: InfoWindow(
+                      title: 'Campus Arapiraca',
+                      snippet: 'IFAL - Campus Arapiraca',
+                    ),
+                  ),
+                },
+              ),
             ),
           ),
         );
@@ -83,12 +85,15 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
               children: [
                 _buildHeader(username: usuario),
                 _buildTabBar(),
-                _buildPosts(),
+                //_buildPosts(),
               ],
             ),
           ),
           Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
+            top: MediaQuery
+                .of(context)
+                .padding
+                .top + 10,
             right: 10,
             child: IconButton(
               onPressed: () {},
@@ -143,16 +148,12 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
             children: [
               _buildChip(
                 Icons.location_pin,
-                'Abrir Página',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const MapaCampusPage()),
-                ),
-              ),
-              const SizedBox(width: 15),
-              _buildChip(
-                Icons.location_pin,
-                'Abrir Modal',
-                onTap: () => _exibirMapaCampus(context),
+                'Campus Arapiraca',
+                onTap: () =>
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const MapaCampusPage()),
+                    ),
               ),
             ],
           ),
@@ -198,57 +199,16 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildPosts() {
+/* Widget _buildPosts() {
     return FutureBuilder<List<dynamic>>(
-      future: _postsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(
+        future: _postsFuture,
+        builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (snapshot.hasError) {
+        return Center(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-                const SizedBox(height: 8),
-                Text(
-                  'Erro ao carregar posts',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          );
-        }
+            mainAxisSize: MainAxisSize.min */
 
-        final posts = snapshot.data ?? [];
-
-        if (posts.isEmpty) {
-          return Center(
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                children: [
-                  TextSpan(text: 'Você não possui nenhum post.'),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 20),
-          itemCount: posts.length,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, i) => BuildPost(post: posts[i]),
-        );
-      },
-    );
-  }
 }
