@@ -3,12 +3,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 
-class MapPage extends StatelessWidget {
+class BuildMap extends StatelessWidget {
   final String titulo;
   final String descricao;
   final LatLng posicao;
 
-  const MapPage({
+  const BuildMap({
     super.key,
     this.titulo = 'Campus Arapiraca',
     this.descricao = 'IFAL - Campus Arapiraca',

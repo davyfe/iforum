@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '/domain/evento.dart';
 import '/api/evento_api.dart';
 import '/cores.dart';
-import 'build_map.dart';
+import '/pages/map_page.dart';
 import 'build_text.dart';
 
 class BuildEventoDetalhe extends StatefulWidget {
