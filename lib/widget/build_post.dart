@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/widget/map_page.dart';
 
 import '/domain/post.dart';
 import '/cores.dart';
@@ -35,6 +36,40 @@ class _BuildPostState extends State<BuildPost> {
                     BuildText(widget.post.tempo),
                     const Spacer(),
                     const Icon(Icons.more_horiz),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: Cores.textoTerciario,
+                      size: 16,
+                    ),
+
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 4,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => MapSample()),
+                        );
+                      },
+                      child: Text(
+                        'Instituto Federal de Alagoas, campus Arapiraca',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Cores.textoTerciario,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 5),
