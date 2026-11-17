@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../locais.dart';
 import '/domain/evento.dart';
 import '/api/evento_api.dart';
 import '/cores.dart';
@@ -118,10 +119,16 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
               Expanded(
                 child: InkWell(
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => MapPage()),
+                    MaterialPageRoute(
+                      builder: (context) => MapPage(
+                        location: Locais.buscar(evento.local),
+                        titulo: evento.local,
+                        descricao: evento.titulo,
+                      ),
+                    ),
                   ),
                   child: BuildText(evento.local, color: Cores.textoTerciario),
-                )
+                ),
               ),
             ],
           ),

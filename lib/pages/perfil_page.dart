@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../widget/build_text.dart';
-import '../cores.dart';
-import '../db/post_dao.dart';
-import '../widget/build_post.dart';
-import 'mapa_campus_page.dart';
+import '/widget/build_text.dart';
+import '/widget/build_post.dart';
+import '/db/post_dao.dart';
+import '/domain/post.dart';
+import '/cores.dart';
+import '/locais.dart';
+import 'map_page.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({super.key});
@@ -13,11 +14,9 @@ class Perfil extends StatefulWidget {
   State<Perfil> createState() => _PerfilState();
 }
 
-class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
+class _PerfilState extends State<Perfil> {
   final usuario = 'pdrolopes';
-  late final Future<List<dynamic>> _postsFuture;
-
- static const LatLng _campusArapiraca = LatLng(-9.745653, -36.631347);
+  late final Future<List<Post>> _postsFuture;
 
   @override
   void initState() {
@@ -25,59 +24,10 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
     _postsFuture = PostDao().listarPorAutor(usuario);
   }
 
-  void _exibirMapaCampus(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SizedBox(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.65,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text('Campus Arapiraca'),
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                centerTitle: true,
-                leading: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              body: GoogleMap(
-                initialCameraPosition: const CameraPosition(
-                  target: _campusArapiraca,
-                  zoom: 16.0,
-                ),
-                markers: {
-                  const Marker(
-                    markerId: MarkerId('campus_arapiraca'),
-                    position: _campusArapiraca,
-                    infoWindow: InfoWindow(
-                      title: 'Campus Arapiraca',
-                      snippet: 'IFAL - Campus Arapiraca',
-                    ),
-                  ),
-                },
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Cores.fundo,
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -85,15 +35,12 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
               children: [
                 _buildHeader(username: usuario),
                 _buildTabBar(),
-                //_buildPosts(),
+                _buildPosts(),
               ],
             ),
           ),
           Positioned(
-            top: MediaQuery
-                .of(context)
-                .padding
-                .top + 10,
+            top: MediaQuery.of(context).padding.top + 10,
             right: 10,
             child: IconButton(
               onPressed: () {},
@@ -144,18 +91,18 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 15),
-          Row(
-            children: [
-              _buildChip(
-                Icons.location_pin,
-                'Campus Arapiraca',
-                onTap: () =>
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => const MapaCampusPage()),
-                    ),
+          _buildChip(
+            Icons.location_pin,
+            'Campus Arapiraca',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const MapPage(
+                  location: Locais.campusArapiraca,
+                  titulo: 'Campus Arapiraca',
+                  descricao: 'IFAL - Campus Arapiraca',
+                ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -169,13 +116,8 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
       onPressed: onTap ?? () {},
       backgroundColor: Colors.black,
       elevation: 0,
-      side: const BorderSide(
-        color: Colors.white,
-        width: 1,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      side: const BorderSide(color: Colors.white, width: 1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
       padding: const EdgeInsets.only(right: 5),
       labelPadding: const EdgeInsets.only(left: 2, right: 4),
@@ -186,29 +128,52 @@ class _PerfilState extends State<Perfil> with SingleTickerProviderStateMixin {
   Widget _buildTabBar() {
     return DefaultTabController(
       length: 1,
-      child: Container(
-        child: TabBar(
-          unselectedLabelColor: Colors.grey,
-          labelColor: Colors.black,
-          indicatorColor: Cores.verde,
-          indicatorWeight: 3.0,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          tabs: const [Tab(text: "Posts")],
-        ),
+      child: TabBar(
+        unselectedLabelColor: Colors.grey,
+        labelColor: Colors.black,
+        indicatorColor: Cores.verde,
+        indicatorWeight: 3.0,
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        tabs: const [Tab(text: 'Posts')],
       ),
     );
   }
 
-/* Widget _buildPosts() {
-    return FutureBuilder<List<dynamic>>(
-        future: _postsFuture,
-        builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      if (snapshot.hasError) {
-        return Center(
-            child: Column(
-            mainAxisSize: MainAxisSize.min */
-
+  Widget _buildPosts() {
+    return FutureBuilder<List<Post>>(
+      future: _postsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: BuildText('Erro ao carregar posts', color: Colors.red),
+            ),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.all(32),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final posts = snapshot.requireData;
+        if (posts.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: BuildText('Nenhum post ainda', color: Cores.textoTerciario),
+            ),
+          );
+        }
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: posts.length,
+          itemBuilder: (context, i) => BuildPost(post: posts[i]),
+        );
+      },
+    );
+  }
 }

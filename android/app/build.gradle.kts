@@ -4,11 +4,6 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) file.inputStream().use { load(it) }
-}
-
 android {
     namespace = "com.example.iforum"
     compileSdk = flutter.compileSdkVersion
