@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '/domain/post.dart';
+import '/pages/map_page.dart';
+import '/locais.dart';
 import '/cores.dart';
 import 'build_interaction.dart';
 import 'build_text.dart';
@@ -20,9 +22,13 @@ class _BuildPostState extends State<BuildPost> {
       onTap: () {},
       child: Column(
         children: [
-          const Divider(color: Colors.black54, thickness: 0.6, height: 1),
           Container(
-            padding: EdgeInsets.only(top: 15, bottom: 10, left: 20, right: 20),
+            padding: const EdgeInsets.only(
+              top: 15,
+              bottom: 10,
+              left: 20,
+              right: 20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -37,6 +43,8 @@ class _BuildPostState extends State<BuildPost> {
                     const Icon(Icons.more_horiz),
                   ],
                 ),
+                const SizedBox(height: 5),
+                _buildLocal(),
                 const SizedBox(height: 5),
                 BuildText(
                   widget.post.titulo,
@@ -62,7 +70,7 @@ class _BuildPostState extends State<BuildPost> {
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+                      const SizedBox.shrink(),
                     ),
                   ),
                 ],
@@ -78,12 +86,43 @@ class _BuildPostState extends State<BuildPost> {
               ],
             ),
           ),
+          const Divider(color: Colors.black54, thickness: 0.5, height: 1),
         ],
       ),
     );
   }
 
-  // fazer o anexo
+  Widget _buildLocal() {
+    return Row(
+      children: [
+        Icon(Icons.location_on, color: Cores.textoTerciario, size: 16),
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MapPage(
+                  location: Locais.campusArapiraca,
+                  titulo: 'Campus Arapiraca',
+                  descricao: 'IFAL - Campus Arapiraca',
+                ),
+              ),
+            );
+          },
+          child: Text(
+            'Instituto Federal de Alagoas, campus Arapiraca',
+            style: TextStyle(fontSize: 12, color: Cores.textoTerciario),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAnexo(String nome, String tamanho) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
