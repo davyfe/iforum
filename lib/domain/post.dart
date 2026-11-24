@@ -8,7 +8,10 @@ class Post {
   final int comentarios;
   final bool anexo;
   final String urlImagem;
-  bool favorito; // Adicionado para suportar o filtro de favoritos
+  bool favorito;
+  final String local;
+  final double? latitude;
+  final double? longitude;
 
   Post({
     this.id,
@@ -20,8 +23,14 @@ class Post {
     required this.comentarios,
     required this.anexo,
     required this.urlImagem,
-    this.favorito = false, // Valor padrão
+    this.favorito = false,
+    this.local = '',
+    this.latitude,
+    this.longitude,
   });
+
+  // Diz se o post tem um ponto no mapa
+  bool get temLocal => latitude != null && longitude != null;
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
@@ -35,6 +44,27 @@ class Post {
       anexo: json['anexo'] == 1 || json['anexo'] == true,
       urlImagem: json['urlImagem'] ?? '',
       favorito: json['favorito'] == 1 || json['favorito'] == true,
+      local: json['local'] ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'titulo': titulo,
+      'autor': autor,
+      'tempo': tempo,
+      'conteudo': conteudo,
+      'likes': likes,
+      'comentarios': comentarios,
+      'anexo': anexo,
+      'urlImagem': urlImagem,
+      'favorito': favorito,
+      'local': local,
+      'latitude': latitude,
+      'longitude': longitude,
+    };
   }
 }

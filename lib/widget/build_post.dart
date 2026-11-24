@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '/domain/post.dart';
 import '/pages/map_page.dart';
-import '/locais.dart';
 import '/cores.dart';
 import 'build_interaction.dart';
 import 'build_text.dart';
+import '/pages/detail_page.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 
 class BuildPost extends StatefulWidget {
   final Post post;
@@ -16,10 +19,22 @@ class BuildPost extends StatefulWidget {
 }
 
 class _BuildPostState extends State<BuildPost> {
+  Post get post => widget.post;
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () async{
+        final Geocoding geocoding = Geocoding();
+        List<Location> locations = await geocoding.locationFromAddress('Gronausestraat 710, Enschede');
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPage(post: widget.post),
+          ),
+        );
+      },
       child: Column(
         children: [
           Container(

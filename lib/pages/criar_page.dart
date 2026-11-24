@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:iforum/db/post_dao.dart';
 import '/widget/build_select_image.dart';
 import '/widget/build_text.dart';
 import '/cores.dart';
 import '/domain/post.dart';
 import '/api/post_api.dart'; // Ajustado para usar a API web se esse for o seu fluxo principal
+import '/pages/escolher_local_page.dart';
 
 class CriarPost extends StatefulWidget {
   const CriarPost({super.key});
@@ -16,6 +18,7 @@ class _CriarPostState extends State<CriarPost> {
   final _tituloC = TextEditingController();
   final _conteudoC = TextEditingController();
   String _urlImagem = '';
+  LocalEscolhido? _local;
   bool _salvo = false;
 
   @override
@@ -45,11 +48,14 @@ class _CriarPostState extends State<CriarPost> {
       comentarios: 0,
       anexo: _urlImagem.isNotEmpty,
       urlImagem: _urlImagem,
+      local: _local?.nome ?? '',
+      latitude: _local?.posicao.latitude,
+      longitude: _local?.posicao.longitude,
     );
 
     try {
       // Se estiver usando API web via Dio:
-      await PostsApi().inserirPost(post);
+      await PostDao().inserirPost(post);
 
       // Caso queira usar banco local SQLite em vez da API, descomente a linha abaixo:
       // await PostDao().inserirPost(post);
@@ -167,6 +173,21 @@ class _CriarPostState extends State<CriarPost> {
                     ],
                   ),
                 ),
+              if (_local != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(_local!.nome)),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () => setState(() => _local = null),
+                      ),
+                    ],
+                  ),
+                ),
               _buildFormatacao(),
             ],
           ),
@@ -201,6 +222,18 @@ class _CriarPostState extends State<CriarPost> {
                 setState(() {
                   _urlImagem = urlEscolhida;
                 });
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.location_on, color: Colors.black),
+            onPressed: () async {
+              final escolhido = await Navigator.push<LocalEscolhido>(
+                context,
+                MaterialPageRoute(builder: (_) => const EscolherLocalPage()),
+              );
+              if (escolhido != null) {
+                setState(() => _local = escolhido);
               }
             },
           ),

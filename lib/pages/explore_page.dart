@@ -7,6 +7,7 @@ import '/api/post_api.dart';
 import '/domain/post.dart';
 import 'criar_page.dart';
 import '/cores.dart';
+import '../db/post_dao.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -25,7 +26,7 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
-    futureListaPosts = PostsApi().listarPosts();
+    futureListaPosts = PostDao().listarPosts();
     futureNotificacoes = _verificarNotificacoes();
   }
 
@@ -37,7 +38,7 @@ class _ExploreState extends State<Explore> {
 
   void recarregar() {
     setState(() {
-      futureListaPosts = PostsApi().listarPosts();
+      futureListaPosts = PostDao().listarPosts();
     });
   }
 
