@@ -113,6 +113,10 @@ class DbHelper {
     "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('V Festival de Arte', '04/12', '8:00', 'Ifal Campus Penedo', 'Comissão de Arte', 4294912563)";
     await db.execute(sql);
 
+    sql =
+    "INSERT INTO EVENTO (titulo, data, horario, local, autor, cor) VALUES ('Jogos das Instituições Federais (JIFs) 2026', '13/09', '8:00', 'IFRN Campus Natal', 'Karinne Coelho', 4278217535)";
+    await db.execute(sql);
+
     sql = '''CREATE TABLE EMPRESTIMO (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tituloLivro TEXT NOT NULL,
