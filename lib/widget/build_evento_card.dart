@@ -20,7 +20,6 @@ class _BuildEventoCardState extends State<BuildEventoCard> {
   Future<void> _alternarFavorito() async {
     final novoValor = !widget.evento.favorito;
 
-    // atualiza a UI na hora (otimista)
     setState(() {
       widget.evento.favorito = novoValor;
     });

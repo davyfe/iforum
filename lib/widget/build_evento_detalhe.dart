@@ -44,7 +44,6 @@ class _BuildEventoDetalheState extends State<BuildEventoDetalhe> {
       widget.onAlterado?.call();
     } else {
       setState(() => _carregando = false);
-      // opcional: mostrar um SnackBar avisando que falhou
     }
   }
 

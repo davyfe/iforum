@@ -23,7 +23,7 @@ class _EventosState extends State<Eventos> {
 
   void recarregar() {
     setState(() {
-      futureEventos = EventosApi().listarEventos();
+      futureEventos = EventoDao().listarEventos();
     });
   }
 
